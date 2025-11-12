@@ -4,13 +4,13 @@ from passlib.context import CryptContext
 from app.models.Usuario import Usuario  
 from app.schemas.UsuarioSchema import UsuarioCreate, UsuarioResponse
 from passlib.context import CryptContext
+from fastapi import HTTPException, status
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 def listar_usuarios(db: Session):
     return db.query(Usuario).all()
 
-from fastapi import HTTPException, status
 
 #usuario ID
 def obter_usuario(db: Session, usuario_id: int):

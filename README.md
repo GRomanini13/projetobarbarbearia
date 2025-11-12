@@ -20,16 +20,19 @@ cd <NOME_DO_PROJETO>
 
 Criando e ativando o ambiente virtual
 
-No Linux/macOS
-# Criar o ambiente virtual
+# No Linux/macOS
+- Criar o ambiente virtual
 python3 -m venv venv
-# Ativar o ambiente virtual
+
+- Ativar o ambiente virtual
 source venv/bin/activate
 
-No Windows (PowerShell)
-# Criar o ambiente virtual
+
+# No Windows (PowerShell) 
+- Criar o ambiente virtual
 python -m venv venv
-# Ativar o ambiente virtual
+
+- Ativar o ambiente virtual
 .\venv\Scripts\Activate.ps1
 
 Dica: Sempre ative o ambiente virtual ao iniciar uma nova sessão de terminal antes de rodar o projeto.

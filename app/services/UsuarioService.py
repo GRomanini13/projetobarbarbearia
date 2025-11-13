@@ -96,6 +96,7 @@ def resetar_email_por_telefone(db: Session, telefone: str, novo_email: str):
     db.refresh(usuario)
 
 
+# Regra de negócio para autenticar o usuário (login)
 def autenticar_usuario(db: Session, email: str, senha: str):
     usuario = db.query(Usuario).filter(Usuario.email == email).first()
 

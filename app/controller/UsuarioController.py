@@ -43,7 +43,7 @@ def reset_senha(dados: UsuarioResetSenha, db: Session = Depends(get_db)):
 def reset_email(dados: UsuarioResetEmail, db: Session = Depends(get_db)):
     return resetar_email_por_telefone(db, dados.telefone, dados.novo_email)
 
-
+# Rota de login 
 @router.post("/login", response_model=UsuarioResponse)
 def login(
     email: str = Form(...),

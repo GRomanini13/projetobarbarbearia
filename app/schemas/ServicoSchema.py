@@ -2,11 +2,14 @@ from pydantic import BaseModel
 
 class ServicoBase(BaseModel):
     nome: str
-    duracao_min: int
     preco: float
+    duracao_min: int
+
 
 class ServicoCreate(ServicoBase):
-    pass
+    nome: str
+    preco: float 
+    duracao_min: int 
 
 class ServicoResponse(ServicoBase):
     id: int

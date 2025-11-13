@@ -3,10 +3,10 @@ from app.core.database import Base, engine
 import app.models  # importa todos os models para registrar as tabelas
 from fastapi.middleware.cors import CORSMiddleware
 
-#  Cria as tabelas e mostra no console
-print(" Criando tabelas no banco de dados...")
+# Cria as tabelas
+print("Criando tabelas no banco de dados...")
 Base.metadata.create_all(bind=engine)
-print(" Tabelas criadas (ou já existentes):")
+print("Tabelas criadas (ou já existentes):")
 for table in Base.metadata.tables.keys():
     print(f" - {table}")
 
@@ -16,15 +16,6 @@ from app.controller.UsuarioController import router as usuario_router
 # Inicializa o FastAPI
 app = FastAPI(title="API Barbearia")
 
-# Inclui as rotas
-app.include_router(usuario_router)
-
-@app.get("/")
-def read_root():
-    return {"msg": "API da Barbearia rodando"}
-
-app = FastAPI()
-
 # Habilita CORS
 app.add_middleware(
     CORSMiddleware,
@@ -33,3 +24,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Inclui as rotas
+app.include_router(usuario_router)
+
+@app.get("/")
+def read_root():
+    return {"msg": "API da Barbearia rodando 🚀"}

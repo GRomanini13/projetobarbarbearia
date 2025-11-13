@@ -2,6 +2,8 @@ from fastapi import FastAPI
 from app.core.database import Base, engine
 import app.models  # importa todos os models para registrar as tabelas
 from fastapi.middleware.cors import CORSMiddleware
+from app.controller.ServicoController import router as servico_router
+
 
 # Cria as tabelas
 print("Criando tabelas no banco de dados...")
@@ -19,7 +21,7 @@ app = FastAPI(title="API Barbearia")
 # Habilita CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # ou ["http://127.0.0.1:5500"]
+    allow_origins=["*"], 
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -27,6 +29,9 @@ app.add_middleware(
 
 # Inclui as rotas
 app.include_router(usuario_router)
+app.include_router(servico_router)
+
+
 
 @app.get("/")
 def read_root():

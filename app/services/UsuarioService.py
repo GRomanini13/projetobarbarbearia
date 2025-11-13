@@ -94,3 +94,21 @@ def resetar_email_por_telefone(db: Session, telefone: str, novo_email: str):
     usuario.email = novo_email
     db.commit()
     db.refresh(usuario)
+
+
+def autenticar_usuario(db: Session, email: str, senha: str):
+    usuario = db.query(Usuario).filter(Usuario.email == email).first()
+
+    if not usuario:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Usuário não encontrado."
+        )
+
+    if not pwd_context.verify(senha, usuario.senha):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Senha incorreta."
+        )
+
+    return usuario

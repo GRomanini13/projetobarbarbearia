@@ -1,7 +1,7 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, Form, HTTPException
 from sqlalchemy.orm import Session
 from app.schemas.UsuarioSchema import UsuarioCreate, UsuarioResetEmail, UsuarioResetSenha, UsuarioResponse
-from app.services.UsuarioService import criar_usuario, listar_usuarios, obter_usuario, deletar_usuario, resetar_email_por_telefone, resetar_senha_por_email
+from app.services.UsuarioService import autenticar_usuario, criar_usuario, listar_usuarios, obter_usuario, deletar_usuario, resetar_email_por_telefone, resetar_senha_por_email
 from app.core.database import get_db
 
 
@@ -42,3 +42,13 @@ def reset_senha(dados: UsuarioResetSenha, db: Session = Depends(get_db)):
 @router.put("/reset-email")
 def reset_email(dados: UsuarioResetEmail, db: Session = Depends(get_db)):
     return resetar_email_por_telefone(db, dados.telefone, dados.novo_email)
+
+
+@router.post("/login", response_model=UsuarioResponse)
+def login(
+    email: str = Form(...),
+    senha: str = Form(...),
+    db: Session = Depends(get_db)
+):
+    usuario = autenticar_usuario(db, email, senha)
+    return usuario

@@ -5,7 +5,7 @@ from app.services.ServicoService import criar_servico, listar_servicos, obter_se
 from app.core.database import get_db
 
 router = APIRouter(
-    prefix="/sericos",
+    prefix="/servicos",
     tags=["Serviços"]
 )
 

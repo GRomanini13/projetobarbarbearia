@@ -35,4 +35,4 @@ app.include_router(servico_router)
 
 @app.get("/")
 def read_root():
-    return {"msg": "API da Barbearia rodando 🚀"}
+    return {"msg": "API da Barbearia rodando"}

@@ -19,10 +19,10 @@ def obter_servico(db: Session, servico_id: int):
     return servico
 
 # Regra de negócio para criar o serviço
-def criar_servico(db: Session, nome: str, duracao: str, preco: float):
+def criar_servico(db: Session, nome: str, duracao_min: str, preco: float):
     novo_servico = Servico(
         nome=nome,
-        duracao=duracao,
+        duracao=duracao_min,
         preco=preco
     )
 

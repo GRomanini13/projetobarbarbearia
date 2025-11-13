@@ -22,7 +22,7 @@ def get_servico(servico_id: int, db: Session = Depends(get_db)):
 # POST criar serviço
 @router.post("/")
 def post_servico(servico: ServicoCreate, db: Session = Depends(get_db)):
-    return criar_servico(db, servico.nome, servico.duracao, servico.preco)      
+    return criar_servico(db, servico.nome, servico.duracao_min, servico.preco)      
 
 
 # DELETE serviço

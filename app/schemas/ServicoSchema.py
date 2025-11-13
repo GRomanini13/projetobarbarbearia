@@ -10,7 +10,7 @@ class ServicoCreate(ServicoBase):
     nome: str
     preco: float 
     duracao_min: int 
-
+    
 class ServicoResponse(ServicoBase):
     id: int
 

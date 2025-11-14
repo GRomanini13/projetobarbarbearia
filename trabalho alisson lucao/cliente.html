@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agendamento de Cortes - Barbearia</title>
+    <link rel="stylesheet" href="main.css">
+    <style>
+        body {
+            display: block; 
+            padding: 20px;
+        }
+        .client-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(0, 0, 0, 0.3);
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 900px; 
+            margin: 50px auto; 
+            color: #fff;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+        }
+        .client-container h1 {
+            color: #ffd700;
+            font-size: 2em;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .form-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #ffd700;
+            font-weight: 500;
+        }
+        .form-group input[type="text"],
+        .form-group input[type="date"],
+        .form-group input[type="time"],
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            outline: none;
+            background-color: rgba(255,255,255,0.1);
+            color: #fff;
+            font-size: 1em;
+            appearance: none; 
+        }
+        .form-group select {
+            background-repeat: no-repeat;
+            background-position: right 10px top 50%;
+            background-size: 12px;
+            padding-right: 30px; 
+        }
+        .message-container {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 10px 20px;
+            border-radius: 8px;
+            color: #fff;
+            font-weight: bold;
+            z-index: 1000;
+            display: none; 
+            opacity: 0;
+            transition: opacity 0.5s ease-in-out;
+        }
+        .message-container.success { background-color: #28a745; }
+        .message-container.error { background-color: #dc3545; }
+        .message-container.show { display: block; opacity: 1; }
+
+    </style>
+</head>
+<body>
+
+    <div class="header-bar">
+        <span class="logo-text">Agendamento de Cortes</span>
+        
+    </div>
+
+    <div class="message-container" id="messageContainer"></div>
+
+    <div class="client-container">
+        <h1>Marcar Horário</h1>
+
+        <form id="clientAppointmentForm">
+            <div class="form-group">
+                <label for="barber">Barbeiro:</label>
+                <select id="barber" name="barber" required>
+                    <option value="">Carregando...</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="clientName">Seu Nome:</label>
+                <input type="text" id="clientName" name="clientName" placeholder="Seu Nome Completo" required>
+            </div>
+
+            <div class="form-group">
+                <label for="service">Serviço:</label>
+                <select id="service" name="service" required>
+                    <option value="">Carregando...</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="appointmentDate">Data:</label>
+                <input type="date" id="appointmentDate" required>
+            </div>
+
+            <div class="form-group">
+                <label for="appointmentTime">Hora:</label>
+                <select id="appointmentTime" required>
+                    <option value="">Selecione a hora</option>
+                </select>
+            </div>
+
+            <button type="submit">Agendar Corte</button>
+        </form>
+    </div>
+
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+
+    const barberSelect = document.getElementById("barber");
+    const serviceSelect = document.getElementById("service");
+    const dateInput = document.getElementById("appointmentDate");
+    const timeSelect = document.getElementById("appointmentTime");
+    const form = document.getElementById("clientAppointmentForm");
+    const messageContainer = document.getElementById("messageContainer");
+
+    const workingHoursStart = 9;
+    const workingHoursEnd = 18;
+    const timeInterval = 30;
+
+    const formatDate = (date) => date.toISOString().split("T")[0];
+
+    const showMessage = (text, type) => {
+        messageContainer.textContent = text;
+        messageContainer.className = `message-container show ${type}`;
+        setTimeout(() => messageContainer.classList.remove("show"), 3000);
+    };
+
+
+    /* 🔥 1 — CARREGAR BARBEIROS DO BACKEND */
+    async function carregarBarbeiros() {
+        try {
+            const response = await fetch("http://127.0.0.1:8000/usuarios/");
+            const usuarios = await response.json();
+
+            const barbeiros = usuarios.filter(u => u.is_barbeiro === true);
+
+            barberSelect.innerHTML = '<option value="">Selecione um barbeiro</option>';
+
+            barbeiros.forEach(b => {
+                const opt = document.createElement("option");
+                opt.value = b.id;
+                opt.textContent = b.nome;
+                barberSelect.appendChild(opt);
+            });
+
+        } catch (error) {
+            showMessage("Erro ao carregar barbeiros!", "error");
+        }
+    }
+
+
+    /* 🔥 2 — CARREGAR SERVIÇOS DO BACKEND */
+    async function carregarServicos() {
+        try {
+            const response = await fetch("http://127.0.0.1:8000/servicos/");
+            const servicos = await response.json();
+
+            serviceSelect.innerHTML = '<option value="">Selecione um serviço</option> ';
+
+            servicos.forEach(s => {
+                const opt = document.createElement("option");
+                opt.value = s.id;
+                opt.textContent = s.nome;
+                serviceSelect.appendChild(opt);
+            });
+
+        } catch (error) {
+            showMessage("Erro ao carregar serviços!", "error");
+        }
+    }
+
+
+    /* 🔥 3 — GERAR HORÁRIOS DISPONÍVEIS */
+    function generateTimeSlots() {
+
+        const selectedDate = dateInput.value;
+        const selectedBarber = barberSelect.value;
+
+        timeSelect.innerHTML = '<option value="">Selecione a hora</option>';
+
+        if (!selectedDate || !selectedBarber) return;
+
+        const today = new Date();
+        const todayStr = formatDate(today);
+
+        let slotsAdded = 0;
+
+        for (let h = workingHoursStart; h < workingHoursEnd; h++) {
+            for (let m = 0; m < 60; m += timeInterval) {
+
+                const slotTime = `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+                const slotDateTime = new Date(`${selectedDate}T${slotTime}`);
+
+                if (selectedDate === todayStr && slotDateTime < today) continue;
+
+                const opt = document.createElement("option");
+                opt.value = slotTime;
+                opt.textContent = slotTime;
+
+                timeSelect.appendChild(opt);
+                slotsAdded++;
+            }
+        }
+    }
+
+
+    /* 🔥 4 — SALVAR AGENDAMENTO (LocalStorage por enquanto) */
+    form.addEventListener("submit", (e) => {
+        e.preventDefault();
+
+        const appointment = {
+            barber: barberSelect.value,
+            clientName: form.clientName.value,
+            service: serviceSelect.value,
+            date: dateInput.value,
+            time: timeSelect.value,
+        };
+
+        if (Object.values(appointment).includes("")) {
+            showMessage("Preencha todos os campos!", "error");
+            return;
+        }
+
+        const key = `appointments${appointment.barber}`;
+        const list = JSON.parse(localStorage.getItem(key)) || [];
+
+        const conflict = list.some(a => a.date === appointment.date && a.time === appointment.time);
+
+        if (conflict) {
+            showMessage("Horário já ocupado!", "error");
+            return;
+        }
+
+        list.push(appointment);
+        localStorage.setItem(key, JSON.stringify(list));
+
+        showMessage("Agendamento realizado!", "success");
+
+        window.location.href = `horasmarcadas.html?barbeiro=${appointment.barber}`;
+    });
+
+
+    /* 🔥 5 — INICIALIZAR A PÁGINA */
+    function init() {
+        carregarBarbeiros();
+        carregarServicos();
+
+        const today = new Date();
+        const todayStr = formatDate(today);
+        dateInput.value = todayStr;
+        dateInput.setAttribute("min", todayStr);
+
+        dateInput.addEventListener("change", generateTimeSlots);
+        barberSelect.addEventListener("change", generateTimeSlots);
+    }
+
+    init();
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro - Barbearia</title>
+    <link rel="stylesheet" href="main.css">
+</head>
+<body>
+    <div class="background-image"></div>
+
+    <div class="login-container">
+        <div class="logo">
+            <img src="imagens/1600w-4LyCMRxIajk.webp" alt="Logo Barbearia" onerror="this.style.display='none'">
+            <h1>Barbearia</h1>
+            <p>Crie sua conta</p>
+        </div>
+
+        <form id="registerForm">
+            <div id="errorMessage" class="error-message"></div>
+
+            <label for="name">Nome completo</label>
+            <input type="text" id="name" placeholder="Digite seu nome" required>
+
+            <label for="telefone">Telefone</label>
+            <input type="text" id="telefone" placeholder="Digite seu telefone" required>
+
+            <label for="email">E-mail</label>
+            <input type="email" id="email" placeholder="Digite seu e-mail" required>
+
+            <label for="password">Senha</label>
+            <input type="password" id="password" placeholder="Crie uma senha" required>
+
+
+            <button type="submit">Cadastrar</button>
+
+            <div class="links">
+                <a href="main.html">Já tem conta? Entrar</a>
+            </div>
+        </form>
+    </div>
+
+<script>
+const form = document.getElementById("registerForm");
+
+form.addEventListener("submit", async function(event) {
+    event.preventDefault();
+
+    const name = document.getElementById("name").value.trim();
+    const telefone = document.getElementById("telefone").value.trim();
+    const email = document.getElementById("email").value.trim();
+    const password = document.getElementById("password").value.trim();
+    const message = document.getElementById("errorMessage");
+
+    message.style.display = "none";
+    message.textContent = "";
+
+    // Validação simples
+    if (!name || !telefone || !email || !password) {
+        message.textContent = "Por favor, preencha todos os campos.";
+        message.style.display = "block";
+        return;
+    }
+
+    try {
+        const response = await fetch("http://127.0.0.1:8000/usuarios/", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                nome: name,
+                telefone: telefone,
+                email: email,
+                senha: password,
+                is_barbeiro: false
+            })
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(errorText || "Erro ao cadastrar usuário.");
+        }
+
+        message.style.display = "block";
+        message.style.backgroundColor = "rgba(0, 128, 0, 0.2)";
+        message.style.borderColor = "rgba(0, 255, 0, 0.4)";
+        message.style.color = "#0f0";
+        message.textContent = "Cadastro realizado com sucesso!";
+
+        setTimeout(() => {
+            window.location.href = "main.html";
+        }, 1500);
+
+    } catch (error) {
+        message.style.display = "block";
+        message.style.backgroundColor = "rgba(255, 0, 0, 0.2)";
+        message.style.borderColor = "rgba(255, 0, 0, 0.4)";
+        message.style.color = "#f00";
+        message.textContent = "Erro ao cadastrar: " + error.message;
+        console.error("Erro:", error);
+    }
+});
+</script>
+
+
+</body>
+</html>

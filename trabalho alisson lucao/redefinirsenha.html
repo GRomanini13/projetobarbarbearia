@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recuperar Senha - Barbearia</title>
+    <link rel="stylesheet" href="main.css">
+</head>
+<body>
+    <div class="login-container">
+        <div class="logo">
+            <img src="imagens/1600w-4LyCMRxIajk.webp" alt="Logo Barbearia">
+        </div>
+
+        <h1 class="descsenha">Recuperar Senha</h1>
+        <p class="subtitle">Informe seu e-mail para redefinir a senha</p>
+
+        <form id="forgotForm">
+            <label for="email">E-mail cadastrado</label>
+            <input type="email" id="email" name="email" required>
+
+            <div id="message" class="info-message"></div>
+
+            <button type="submit" class="butao">Enviar link de redefinição</button>
+
+            <div class="links">
+                <a href="main.html">Voltar ao login</a>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        const form = document.getElementById('forgotForm');
+        const msg = document.getElementById('message');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            msg.style.display = "none";
+            msg.textContent = "";
+
+            const email = document.getElementById('email').value.trim();
+
+            if (!email) {
+                msg.textContent = "Por favor, informe seu e-mail.";
+                msg.className = "error-message";
+                msg.style.display = "block";
+                return;
+            }
+
+            try {
+                const response = await fetch("http://127.0.0.1:8000/usuarios/redefinir_senha", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email })
+                });
+
+                if (response.ok) {
+                    msg.className = "success-message";
+                    msg.textContent = "Se o e-mail existir no sistema, enviaremos instruções para redefinição.";
+                } else {
+                    msg.className = "error-message";
+                    msg.textContent = "Erro ao processar a solicitação. Tente novamente.";
+                }
+
+                msg.style.display = "block";
+            } catch (error) {
+                msg.className = "error-message";
+                msg.textContent = "Falha na comunicação com o servidor.";
+                msg.style.display = "block";
+            }
+        });
+    </script>
+</body>
+</html>

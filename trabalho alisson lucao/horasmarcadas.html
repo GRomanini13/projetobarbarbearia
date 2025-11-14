@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Horários Marcados - Barbearia</title>
+    <link rel="stylesheet" href="main.css">
+    <style>
+        body {
+            display: block; 
+            padding: 20px;
+        }
+        .appointments-view-container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(0, 0, 0, 0.3);
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 900px; 
+            margin: 50px auto; 
+            color: #fff;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+        }
+        .appointments-view-container h1 {
+            color: #ffd700;
+            font-size: 2em;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .appointment-list {
+            margin-top: 20px;
+        }
+        .appointment-item {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .appointment-item div {
+            margin-right: 15px;
+        }
+        .appointment-item .client-name {
+            font-weight: bold;
+            color: #ffd700;
+        }
+        .appointment-item .details {
+            font-size: 0.9em;
+            color: #ddd;
+        }
+        .appointment-item button {
+            background: #dc3545;
+            border: none;
+            border-radius: 5px;
+            padding: 8px 12px;
+            color: #fff;
+            cursor: pointer;
+            transition: background 0.2s;
+            width: auto; 
+            margin-top: 0; 
+        }
+        .appointment-item button:hover {
+            background: #c82333;
+        }
+        .no-appointments {
+            text-align: center;
+            color: #ddd;
+            padding: 20px;
+        }
+        .header-bar {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            padding: 15px 40px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.3);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #fff;
+        }
+        .header-bar .logo-text {
+            color: #ffd700;
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+        .header-bar .back-button {
+            background: linear-gradient(90deg, #d4af37, #b8860b);
+            border: none;
+            border-radius: 8px;
+            padding: 8px 15px;
+            color: #000;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+            text-decoration: none;
+        }
+        .header-bar .back-button:hover {
+            background: linear-gradient(90deg, #ffd700, #daa520);
+        }
+        @media (max-width: 768px) {
+            .appointments-view-container {
+                width: 95%;
+                padding: 25px;
+            }
+            .header-bar {
+                flex-direction: column;
+                text-align: center;
+            }
+            .header-bar .back-button {
+                margin-top: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="background-image"></div>
+
+    <div class="header-bar">
+        <span class="logo-text">Horários Marcados</span>
+        <a href="main.html" class="back-button">Voltar para Agendamentos</a>
+    </div>
+
+    <div class="appointments-view-container">
+        <h1>Todos os Agendamentos</h1>
+
+        <div id="appointmentsList" class="appointment-list">
+            <p class="no-appointments">Nenhum agendamento marcado ainda.</p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const appointmentsList = document.getElementById("appointmentsList");
+            let appointments = JSON.parse(localStorage.getItem("appointments")) || [];
+
+            function renderAppointments() {
+                appointmentsList.innerHTML = "";
+                if (appointments.length === 0) {
+                    appointmentsList.innerHTML = 
+                        `<p class="no-appointments">Nenhum agendamento marcado ainda.</p>`;
+                    return;
+                }
+
+                appointments.sort((a, b) => {
+                    const dateTimeA = new Date(`${a.date}T${a.time}`);
+                    const dateTimeB = new Date(`${b.date}T${b.time}`);
+                    return dateTimeA - dateTimeB;
+                });
+
+                appointments.forEach((appt, index) => {
+                    const appointmentItem = document.createElement("div");
+                    appointmentItem.classList.add("appointment-item");
+                    appointmentItem.innerHTML = `
+                        <div>
+                            <span class="client-name">${appt.clientName}</span>
+                            <div class="details">Barbeiro: ${appt.barber}</div>
+                            <div class="details">Serviço: ${appt.service}</div>
+                            <div class="details">Data: ${appt.date} às ${appt.time}</div>
+                        </div>
+                        <button data-index="${index}">Desmarcar</button>
+                    `;
+                    appointmentsList.appendChild(appointmentItem);
+                });
+
+                document.querySelectorAll(".appointment-item button").forEach(button => {
+                    button.addEventListener("click", (e) => {
+                        const index = e.target.dataset.index;
+                        appointments.splice(index, 1);
+                        localStorage.setItem("appointments", JSON.stringify(appointments));
+                        renderAppointments();
+                    });
+                });
+            }
+
+            renderAppointments();
+        });
+    </script>
+</body>
+</html>

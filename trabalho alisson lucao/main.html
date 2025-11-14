@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Barbearia</title>
+    <link rel="stylesheet" href="main.css">
+</head>
+<body>
+    <div class="background-image"></div>
+
+    <div class="login-container">
+        <div class="logo">
+            <img src="imagens/1600w-4LyCMRxIajk.webp" alt="Logo Barbearia" onerror="this.style.display='none'">
+            <h1>Barbearia Silver Barber</h1>
+            <p>Estilo, tradição e elegância</p>
+        </div>
+
+        <form id="loginForm">
+            <label for="username">Usuário</label>
+            <input type="text" id="username" name="username" placeholder="Digite seu usuário" required>
+
+            <label for="password">Senha</label>
+            <input type="password" id="password" name="password" placeholder="Digite sua senha" required>
+
+            <div id="errorMessage" class="error-message"></div>
+            <button type="submit">Entrar</button>
+
+            <div class="links">
+                <a href="redefinirsenha.html" id="forgotPassword">Esqueceu a senha?</a>
+                <a href="cadastro.html" id="register">Cadastrar-se</a>
+            </div>
+        </form>
+    </div>
+
+<script>
+const form = document.getElementById("loginForm");
+
+form.addEventListener("submit", async function(event) {
+    event.preventDefault();
+
+    const username = document.getElementById("username").value.trim();
+    const password = document.getElementById("password").value.trim();
+    const message = document.getElementById("errorMessage");
+
+    message.style.display = "none";
+    message.textContent = "";
+
+    if (!username || !password) {
+        message.textContent = "Por favor, preencha todos os campos.";
+        message.style.display = "block";
+        return;
+    }
+
+    try {
+        const formData = new FormData();
+        formData.append("email", username);
+        formData.append("senha", password);
+
+        const response = await fetch("http://127.0.0.1:8000/usuarios/login", {
+            method: "POST",
+            body: formData
+        });
+
+        if (!response.ok) {
+            throw new Error("Erro ao conectar com o servidor");
+        }
+
+        const data = await response.json();
+
+        if (data && data.id) {
+
+            localStorage.setItem("usuarioLogado", JSON.stringify(data));
+
+            // 🔥 REDIRECIONAMENTO COM BASE NO TIPO DE USUÁRIO
+            if (data.is_barbeiro === true) {
+                window.location.href = "horasmarcadas.html";
+            } else {
+                window.location.href = "cliente.html";
+            }
+
+        } else {
+            message.innerHTML = `
+                <img src="imagens/aviso.png" alt="Erro" class="error-icon">
+                Usuário ou senha incorretos!
+            `;
+            message.style.display = "flex";
+        }
+
+    } catch (error) {
+        console.error(error);
+        message.innerHTML = `
+            <img src="imagens/aviso.png" alt="Erro" class="error-icon">
+            Usuário ou senha incorretos.
+        `;
+        message.style.display = "flex";
+    }
+});
+</script>
+
+
+</body>
+</html>

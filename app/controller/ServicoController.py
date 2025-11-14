@@ -33,6 +33,6 @@ def delete_servico(servico_id: int, db: Session = Depends(get_db)):
 # PUT atualizar serviço
 @router.put("/{servico_id}")
 def put_servico(servico_id: int, servico: ServicoCreate, db: Session = Depends(get_db)):
-    return atualizar_servico(db, servico_id, servico.nome, servico.duracao, servico.preco)  
+    return atualizar_servico(db, servico_id, servico.nome, servico.duracao_min, servico.preco)  
 
 

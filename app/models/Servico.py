@@ -1,6 +1,7 @@
 from sqlalchemy import Column, Integer, String
 from sqlalchemy.orm import relationship
 from app.core.database import Base
+from sqlalchemy import Column, Integer, String, Numeric
 
 class Servico(Base):
     __tablename__ = "servicos"

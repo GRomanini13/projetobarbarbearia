@@ -9,7 +9,6 @@ class Agendamento(Base):
     cliente_id = Column(Integer, ForeignKey("usuarios.idusuario"), nullable=False)
     barbeiro_id = Column(Integer, ForeignKey("usuarios.idusuario"), nullable=False)
     servico_id = Column(Integer, ForeignKey("servicos.idservicos"), nullable=False)
-    agenda_id = Column(Integer, ForeignKey("agenda.idagenda"), nullable=True)  # ADICIONE ESTA LINHA
     data_hora_inicio = Column(DateTime, nullable=False)
     data_hora_fim = Column(DateTime, nullable=False)
     observacao = Column(String, nullable=True)
@@ -29,5 +28,3 @@ class Agendamento(Base):
     )
     
     servico = relationship("Servico", foreign_keys=[servico_id])
-    
-    agenda = relationship("Agenda", back_populates="agendamentos")  # ADICIONE ESTA LINHA

@@ -74,7 +74,7 @@ def criar_usuario(db: Session, usuario: UsuarioCreate):
 
 # Regra de negócio para deletar o usuário
 def deletar_usuario(db: Session, usuario_id: int):
-    usuario = db.query(Usuario).filter(Usuario.id == usuario_id).first()
+    usuario = db.query(Usuario).filter(Usuario.idusuario == usuario_id).first()
     if not usuario:
         raise Exception("Usuário não encontrado")
     db.delete(usuario)

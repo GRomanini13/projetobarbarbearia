@@ -8,7 +8,7 @@ def listar_servicos(db: Session):
 
 # Regra de negócio para obter o serviço por ID 
 def obter_servico(db: Session, servico_id: int):
-    servico = db.query(Servico).filter(Servico.id == servico_id).first()
+    servico = db.query(Servico).filter(Servico.idservicos == servico_id).first()
 
     if not servico:
         raise HTTPException(
@@ -34,7 +34,7 @@ def criar_servico(db: Session, nome: str, duracao_min: str, preco: float):
 
 # Regra de negócio para deletar o serviço
 def deletar_servico(db: Session, servico_id: int):
-    servico = db.query(Servico).filter(Servico.id == servico_id).first()
+    servico = db.query(Servico).filter(Servico.idservicos == servico_id).first()
 
     if not servico:
         raise HTTPException(
@@ -48,7 +48,7 @@ def deletar_servico(db: Session, servico_id: int):
 
 # Regra de negócio para atualizar o serviço
 def atualizar_servico(db: Session, servico_id: int, nome: str, duracao: str, preco: float):
-    servico = db.query(Servico).filter(Servico.id == servico_id).first()
+    servico = db.query(Servico).filter(Servico.idservicos == servico_id).first()
 
     if not servico:
         raise HTTPException(

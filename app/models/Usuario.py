@@ -18,14 +18,14 @@ class Usuario(Base):
     inicio_almoco = Column(Time, default="12:00")
     fim_almoco = Column(Time, default="13:00")
     
-    # Relacionamento com agendamentos como CLIENTE (corrigido)
+    # Relacionamento com agendamentos como CLIENTE 
     agendamentos_como_cliente = relationship(
         "Agendamento",
         back_populates="cliente",
         foreign_keys="[Agendamento.cliente_id]"
     )
     
-    # Relacionamento com agendamentos como BARBEIRO (corrigido)
+    # Relacionamento com agendamentos como BARBEIRO
     agendamentos_como_barbeiro = relationship(
         "Agendamento",
         back_populates="barbeiro",

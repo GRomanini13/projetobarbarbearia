@@ -5,7 +5,7 @@ from app.core.database import Base
 class Servico(Base):
     __tablename__ = "servicos"
 
-    id = Column(Integer, primary_key=True, index=True)
+    idservicos = Column(Integer, primary_key=True, index=True)
     nome = Column(String, nullable=False)
     duracao = Column(Integer, nullable=False)  # duração em minutos
     preco = Column(Integer, nullable=False)

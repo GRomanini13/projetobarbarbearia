@@ -3,6 +3,9 @@ from app.core.database import Base, engine
 import app.models  # importa todos os models para registrar as tabelas
 from fastapi.middleware.cors import CORSMiddleware
 from app.controller.ServicoController import router as servico_router
+from app.controller.AgendaBarbeiroController import router as agenda_router
+from app.controller.AgendamentoController import router as agendamento_router
+
 
 
 # Cria as tabelas
@@ -30,7 +33,8 @@ app.add_middleware(
 # Inclui as rotas
 app.include_router(usuario_router)
 app.include_router(servico_router)
-
+app.include_router(agenda_router) 
+app.include_router(agendamento_router)
 
 
 @app.get("/")

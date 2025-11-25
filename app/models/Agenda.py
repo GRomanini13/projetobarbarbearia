@@ -4,10 +4,10 @@ from app.core.database import Base
 
 class Agenda(Base):
     __tablename__ = "agenda"
-
-    id = Column(Integer, primary_key=True, index=True)
+    
+    idagenda = Column(Integer, primary_key=True, index=True)
     nome = Column(String, nullable=False)
-
+    
     # Relacionamento com Agendamento
     agendamentos = relationship(
         "Agendamento",

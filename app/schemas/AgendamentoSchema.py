@@ -1,16 +1,19 @@
 from pydantic import BaseModel
+from typing import Optional
+from datetime import date, time
 
-class AgendamentoBase(BaseModel):
-    usuario_id: int
+class AgendamentoCreate(BaseModel):
+    cliente_id: int
     barbeiro_id: int
     servico_id: int
-    agenda_id: int
+    data: date
+    hora_inicio: time
+    hora_fim: time
+    observacao: Optional[str] = None
 
-class AgendamentoCreate(AgendamentoBase):
-    pass
-
-class AgendamentoResponse(AgendamentoBase):
-    id: int
+class AgendamentoResponse(AgendamentoCreate):
+    idagendamento: int
+    status_id: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True

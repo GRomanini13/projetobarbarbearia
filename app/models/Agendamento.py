@@ -1,35 +1,33 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime
+from sqlalchemy import Column, Integer, ForeignKey, DateTime, String
 from sqlalchemy.orm import relationship
 from app.core.database import Base
 
 class Agendamento(Base):
     __tablename__ = "agendamentos"
-
-    id = Column(Integer, primary_key=True, index=True)
-    usuario_id = Column(Integer, ForeignKey("usuarios.id"), nullable=False)
-    barbeiro_id = Column(Integer, ForeignKey("usuarios.id"), nullable=False)
-    agenda_id = Column(Integer, ForeignKey("agenda.id"), nullable=False)
-    servico_id = Column(Integer, ForeignKey("servicos.id"), nullable=False)  # <--- FK adicionada
-    data_hora = Column(DateTime, nullable=False)
-
-    usuario = relationship(
-        "Usuario",
-        back_populates="agendamentos",
-        foreign_keys=[usuario_id]
+    
+    idagendamento = Column(Integer, primary_key=True, index=True)
+    cliente_id = Column(Integer, ForeignKey("usuarios.idusuario"), nullable=False)
+    barbeiro_id = Column(Integer, ForeignKey("usuarios.idusuario"), nullable=False)
+    servico_id = Column(Integer, ForeignKey("servicos.idservicos"), nullable=False)
+    agenda_id = Column(Integer, ForeignKey("agenda.idagenda"), nullable=True)  # ADICIONE ESTA LINHA
+    data_hora_inicio = Column(DateTime, nullable=False)
+    data_hora_fim = Column(DateTime, nullable=False)
+    observacao = Column(String, nullable=True)
+    status_id = Column(Integer, default=1)
+    
+    # Relacionamentos
+    cliente = relationship(
+        "Usuario", 
+        foreign_keys=[cliente_id],
+        back_populates="agendamentos_como_cliente"
     )
-
+    
     barbeiro = relationship(
-        "Usuario",
-        back_populates="agendamentos_como_barbeiro",
-        foreign_keys=[barbeiro_id]
+        "Usuario", 
+        foreign_keys=[barbeiro_id],
+        back_populates="agendamentos_como_barbeiro"
     )
-
-    agenda = relationship(
-        "Agenda",
-        back_populates="agendamentos"
-    )
-
-    servico = relationship(
-        "Servico",
-        back_populates="agendamentos"
-    )
+    
+    servico = relationship("Servico", foreign_keys=[servico_id])
+    
+    agenda = relationship("Agenda", back_populates="agendamentos")  # ADICIONE ESTA LINHA

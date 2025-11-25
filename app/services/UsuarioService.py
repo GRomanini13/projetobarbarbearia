@@ -6,13 +6,14 @@ from app.schemas.UsuarioSchema import UsuarioCreate, UsuarioResponse
 from passlib.context import CryptContext
 from fastapi import HTTPException, status
 
+# Listar todos os usuários
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 def listar_usuarios(db: Session):
     return db.query(Usuario).all()
 
 
-#usuario ID
+# usuario ID
 def obter_usuario(db: Session, usuario_id: int):
     usuario = db.query(Usuario).filter(Usuario.id == usuario_id).first()
 
@@ -32,14 +33,24 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # Regra de negócio para criar o usuário
 def criar_usuario(db: Session, usuario: UsuarioCreate):
+    # Verificar se já existe email
+    if db.query(Usuario).filter(Usuario.email == usuario.email).first():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Email já cadastrado."
+        )
+
+    # Verificar se já existe telefone
+    if db.query(Usuario).filter(Usuario.telefone == usuario.telefone).first():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Telefone já cadastrado."
+        )
+
+    # Hash da senha
     senha_bytes = usuario.senha.encode('utf-8')
-
-    print("Senha original bytes:", senha_bytes)
-    print("Tamanho em bytes:", len(senha_bytes))
-
     if len(senha_bytes) > 72:
         senha_bytes = senha_bytes[:72]
-
     hashed_password = pwd_context.hash(senha_bytes.decode('utf-8', 'ignore'))
 
     novo_usuario = Usuario(
@@ -47,7 +58,11 @@ def criar_usuario(db: Session, usuario: UsuarioCreate):
         telefone=usuario.telefone, 
         email=usuario.email,
         senha=hashed_password,
-        is_barbeiro=usuario.is_barbeiro
+        is_barbeiro=usuario.is_barbeiro,
+        inicio_expediente=usuario.inicio_expediente,
+        fim_expediente=usuario.fim_expediente,
+        inicio_almoco=usuario.inicio_almoco,
+        fim_almoco=usuario.fim_almoco
     )
 
     db.add(novo_usuario)
@@ -55,6 +70,7 @@ def criar_usuario(db: Session, usuario: UsuarioCreate):
     db.refresh(novo_usuario)
 
     return novo_usuario
+
 
 # Regra de negócio para deletar o usuário
 def deletar_usuario(db: Session, usuario_id: int):

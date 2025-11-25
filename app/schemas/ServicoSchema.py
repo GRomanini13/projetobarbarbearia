@@ -12,7 +12,7 @@ class ServicoCreate(ServicoBase):
     duracao_min: int 
     
 class ServicoResponse(ServicoBase):
-    id: int
+    idservicos: int
 
     class Config:
         orm_mode = True

@@ -60,3 +60,13 @@ uvicorn app.main:app --reload
 Boas práticas de Git
     • Se atente para realizar commits nas branches corretas.
     • Use mensagens claras e descritivas ao fazer commit.
+
+
+
+
+
+LISTA DE MELHORIAS (backend)
+    • Rota para cadastro de fotos (barbeiro e cliente)
+    • Possível lojinha dentro do sistema web/app para barbeiros conseguir vender suas pomadas modeladora, gel, spray modelador ou qualquer item...
+    • Sistema de pontuação (clientes mais presentes conseguir trocar pontos em cortes de cabelos, barba, sobramcelha, ou até mesmo gastar na lojinha)
+    • Integração com mercado pago para pagamentos via cartão de crédito ou pix dentro do próprio app (ou sendo direcionado ao mercado pago)

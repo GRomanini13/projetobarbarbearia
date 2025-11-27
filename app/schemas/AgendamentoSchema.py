@@ -29,6 +29,7 @@ class AgendamentoResponse(BaseModel):
     data_hora_fim: datetime
     observacao: Optional[str] = None
     status_id: int
+    preco: float
 
     class Config:
         from_attributes = True

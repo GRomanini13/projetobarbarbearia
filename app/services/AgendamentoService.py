@@ -90,7 +90,8 @@ def criar_agendamento(db: Session, agendamento_data):
         data_hora_inicio=data_hora_inicio,
         data_hora_fim=data_hora_fim,
         observacao=agendamento_data.observacao,
-        status_id=1  # 1 = agendado/pendente
+        status_id=1,
+        preco=servico.preco # 1 = agendado/pendente
     )
     
     db.add(novo_agendamento)

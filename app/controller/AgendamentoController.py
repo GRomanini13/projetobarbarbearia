@@ -88,3 +88,17 @@ def get_agendamento(id_agendamento: int, db: Session = Depends(get_db)):
             "nome": agendamento.nome_servico
         }
     }
+
+
+@router.get("/barbeiro/agendamentos/")
+def listar_agendamentos_barbeiro(
+    barbeiro_id: int = Query(..., description="ID do barbeiro"),
+    data: date = Query(..., description="Data desejada (YYYY-MM-DD)"),
+    db: Session = Depends(get_db)
+):
+    """
+    Lista todos os agendamentos do barbeiro em uma data específica.
+    """
+    from app.services.AgendamentoService import listar_agendamentos_barbeiro
+
+    return listar_agendamentos_barbeiro(db, barbeiro_id, data)

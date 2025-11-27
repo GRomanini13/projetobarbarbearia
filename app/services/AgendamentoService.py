@@ -5,6 +5,9 @@ from fastapi import HTTPException
 from app.models.Agendamento import Agendamento
 from app.models.Usuario import Usuario
 from app.models.Servico import Servico
+from sqlalchemy.orm import aliased
+from sqlalchemy import Date
+from sqlalchemy import and_
 
 def criar_agendamento(db: Session, agendamento_data):
     # Verifica se cliente existe
@@ -194,3 +197,42 @@ def obter_horarios_disponiveis(
         "data": data_desejada,
         "horarios_disponiveis": horarios_disponiveis
     }
+
+
+def listar_agendamentos_barbeiro(db: Session, barbeiro_id: int, data):
+    Cliente = aliased(Usuario)
+
+    agendamentos = (
+        db.query(
+            Agendamento.idagendamento,
+            Agendamento.data_hora_inicio,
+            Agendamento.data_hora_fim,
+            Agendamento.observacao,
+            Agendamento.preco,
+            Servico.nome.label("nome_servico"),
+            Servico.duracao.label("duracao_servico"),
+            Cliente.nome.label("nome_cliente")
+        )
+        .join(Servico, Agendamento.servico_id == Servico.idservicos)
+        .join(Cliente, Agendamento.cliente_id == Cliente.idusuario)
+        .filter(
+            Agendamento.barbeiro_id == barbeiro_id,
+            Agendamento.data_hora_inicio.cast(Date) == data
+        )
+        .order_by(Agendamento.data_hora_inicio)
+        .all()
+    )
+
+    return [
+        {
+            "id": a.idagendamento,
+            "cliente": a.nome_cliente,
+            "servico": a.nome_servico,
+            "duracao": a.duracao_servico,
+            "preco": float(a.preco),
+            "data_hora_inicio": a.data_hora_inicio,
+            "data_hora_fim": a.data_hora_fim,
+            "observacao": a.observacao
+        }
+        for a in agendamentos
+    ]

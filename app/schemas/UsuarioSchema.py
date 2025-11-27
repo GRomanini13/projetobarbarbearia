@@ -1,37 +1,40 @@
-# app/schemas/UsuarioSchema.py
-from pydantic import BaseModel, EmailStr, Field
+from pydantic import BaseModel, EmailStr
 from typing import Optional
 from datetime import time
 
 class UsuarioCreate(BaseModel):
     nome: str
     telefone: str
-    email: str
+    email: EmailStr
     senha: str
-    is_barbeiro: bool
-    inicio_expediente: time
-    fim_expediente: time
-    inicio_almoco: time
-    fim_almoco: time
+    is_barbeiro: bool = False
 
-class UsuarioResponse(BaseModel):
-    id: int = Field(..., alias="idusuario")
-    nome: str
-    telefone: str
-    email: str
-    is_barbeiro: bool
+    # Horários opcionais
     inicio_expediente: Optional[time] = None
     fim_expediente: Optional[time] = None
     inicio_almoco: Optional[time] = None
     fim_almoco: Optional[time] = None
 
-    model_config = {
-        "from_attributes": True
-    }
+
+class UsuarioResponse(BaseModel):
+    idusuario: int
+    nome: str
+    telefone: str
+    email: str
+    is_barbeiro: bool
+    inicio_expediente: Optional[time]
+    fim_expediente: Optional[time]
+    inicio_almoco: Optional[time]
+    fim_almoco: Optional[time]
+
+    class Config:
+        orm_mode = True
+
 
 class UsuarioResetSenha(BaseModel):
     email: EmailStr
     nova_senha: str
+
 
 class UsuarioResetEmail(BaseModel):
     telefone: str

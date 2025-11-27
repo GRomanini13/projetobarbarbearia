@@ -4,7 +4,6 @@ from app.schemas.UsuarioSchema import UsuarioCreate, UsuarioResetEmail, UsuarioR
 from app.services.UsuarioService import autenticar_usuario, criar_usuario, listar_usuarios, obter_usuario, deletar_usuario, resetar_email_por_telefone, resetar_senha_por_email
 from app.core.database import get_db
 
-
 router = APIRouter(
     prefix="/usuarios",
     tags=["Usuários"]
@@ -26,6 +25,26 @@ def get_usuario(usuario_id: int, db: Session = Depends(get_db)):
 # POST criar usuário
 @router.post("/", response_model=UsuarioResponse)
 def post_usuario(usuario: UsuarioCreate, db: Session = Depends(get_db)):
+
+    # === VALIDAÇÃO PARA BARBEIROS ===
+    if usuario.is_barbeiro:
+        if (
+            usuario.inicio_expediente is None or
+            usuario.fim_expediente is None or
+            usuario.inicio_almoco is None or
+            usuario.fim_almoco is None
+        ):
+            raise HTTPException(
+                status_code=422,
+                detail="Barbeiro deve preencher seus horários."
+            )
+    else:
+        # Cliente → horários ignorados
+        usuario.inicio_expediente = None
+        usuario.fim_expediente = None
+        usuario.inicio_almoco = None
+        usuario.fim_almoco = None
+
     return criar_usuario(db, usuario)
 
 # DELETE usuário
@@ -33,12 +52,12 @@ def post_usuario(usuario: UsuarioCreate, db: Session = Depends(get_db)):
 def delete_usuario(usuario_id: int, db: Session = Depends(get_db)):
     return deletar_usuario(db, usuario_id)
 
-#Alterar senha passando de parâmetro o email
+# Alterar senha passando o email
 @router.put("/reset-senha")
 def reset_senha(dados: UsuarioResetSenha, db: Session = Depends(get_db)):
     return resetar_senha_por_email(db, dados.email, dados.nova_senha)
 
-#Alterar email passando de parâmetro o telefone
+# Alterar email passando o telefone
 @router.put("/reset-email")
 def reset_email(dados: UsuarioResetEmail, db: Session = Depends(get_db)):
     return resetar_email_por_telefone(db, dados.telefone, dados.novo_email)

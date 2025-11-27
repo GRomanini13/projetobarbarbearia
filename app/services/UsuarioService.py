@@ -1,21 +1,20 @@
 from sqlalchemy.orm import Session
 from fastapi import HTTPException, status
 from passlib.context import CryptContext
-from app.models.Usuario import Usuario  
-from app.schemas.UsuarioSchema import UsuarioCreate, UsuarioResponse
-from passlib.context import CryptContext
-from fastapi import HTTPException, status
+from app.models.Usuario import Usuario
+from app.schemas.UsuarioSchema import UsuarioCreate
 
-# Listar todos os usuários
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
+
+# LISTAR TODOS OS USUÁRIOS
 def listar_usuarios(db: Session):
     return db.query(Usuario).all()
 
 
-# usuario ID
+# OBTER USUÁRIO POR ID
 def obter_usuario(db: Session, usuario_id: int):
-    usuario = db.query(Usuario).filter(Usuario.id == usuario_id).first()
+    usuario = db.query(Usuario).filter(Usuario.idusuario == usuario_id).first()
 
     if not usuario:
         raise HTTPException(
@@ -23,41 +22,56 @@ def obter_usuario(db: Session, usuario_id: int):
             detail="Usuário não encontrado"
         )
 
-    # mostrar senha antes de truncar
-    print("Senha original:", usuario.senha)
-    senha_truncada = usuario.senha[:72] if usuario.senha else None
-
     return usuario
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-# Regra de negócio para criar o usuário
+# CRIAR USUÁRIO (REGRA PRINCIPAL)
 def criar_usuario(db: Session, usuario: UsuarioCreate):
-    # Verificar se já existe email
+
+    # EMAIL duplicado
     if db.query(Usuario).filter(Usuario.email == usuario.email).first():
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Email já cadastrado."
         )
 
-    # Verificar se já existe telefone
+    # TELEFONE duplicado
     if db.query(Usuario).filter(Usuario.telefone == usuario.telefone).first():
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Telefone já cadastrado."
         )
 
-    # Hash da senha
-    senha_bytes = usuario.senha.encode('utf-8')
-    if len(senha_bytes) > 72:
-        senha_bytes = senha_bytes[:72]
-    hashed_password = pwd_context.hash(senha_bytes.decode('utf-8', 'ignore'))
+    # BARBEIRO → horários obrigatórios
+    if usuario.is_barbeiro:
+
+        if not usuario.inicio_expediente or not usuario.fim_expediente:
+            raise HTTPException(
+                status_code=400,
+                detail="Barbeiro deve preencher início e fim de expediente."
+            )
+
+        if not usuario.inicio_almoco or not usuario.fim_almoco:
+            raise HTTPException(
+                status_code=400,
+                detail="Barbeiro deve preencher horário de almoço."
+            )
+
+    # CLIENTE → limpar horários
+    else:
+        usuario.inicio_expediente = None
+        usuario.fim_expediente = None
+        usuario.inicio_almoco = None
+        usuario.fim_almoco = None
+
+    # HASH DA SENHA
+    senha_hash = pwd_context.hash(usuario.senha)
 
     novo_usuario = Usuario(
         nome=usuario.nome,
-        telefone=usuario.telefone, 
+        telefone=usuario.telefone,
         email=usuario.email,
-        senha=hashed_password,
+        senha=senha_hash,
         is_barbeiro=usuario.is_barbeiro,
         inicio_expediente=usuario.inicio_expediente,
         fim_expediente=usuario.fim_expediente,
@@ -72,21 +86,26 @@ def criar_usuario(db: Session, usuario: UsuarioCreate):
     return novo_usuario
 
 
-# Regra de negócio para deletar o usuário
+# DELETAR USUÁRIO
 def deletar_usuario(db: Session, usuario_id: int):
     usuario = db.query(Usuario).filter(Usuario.idusuario == usuario_id).first()
+
     if not usuario:
-        raise Exception("Usuário não encontrado")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Usuário não encontrado"
+        )
+
     db.delete(usuario)
     db.commit()
+
     return {"msg": "Usuário deletado com sucesso"}
 
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
-# Regra de negócio para resetar a senha por email
+# RESETAR SENHA PELO EMAIL
 def resetar_senha_por_email(db: Session, email: str, nova_senha: str):
     usuario = db.query(Usuario).filter(Usuario.email == email).first()
+
     if not usuario:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -96,11 +115,14 @@ def resetar_senha_por_email(db: Session, email: str, nova_senha: str):
     usuario.senha = pwd_context.hash(nova_senha)
     db.commit()
     db.refresh(usuario)
+
     return {"msg": "Senha atualizada com sucesso."}
 
-# Regra de negócio para resetar o email por telefone
+
+# RESETAR EMAIL PELO TELEFONE
 def resetar_email_por_telefone(db: Session, telefone: str, novo_email: str):
     usuario = db.query(Usuario).filter(Usuario.telefone == telefone).first()
+
     if not usuario:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -111,8 +133,11 @@ def resetar_email_por_telefone(db: Session, telefone: str, novo_email: str):
     db.commit()
     db.refresh(usuario)
 
+    return {"msg": "Email atualizado com sucesso."}
 
-# Regra de negócio para autenticar o usuário (login)
+
+
+# LOGIN / AUTENTICAR
 def autenticar_usuario(db: Session, email: str, senha: str):
     usuario = db.query(Usuario).filter(Usuario.email == email).first()
 

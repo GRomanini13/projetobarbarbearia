@@ -1,8 +1,7 @@
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from datetime import date
-from app.schemas.AgendamentoSchema import AgendamentoCreate, AgendamentoResponse, DisponibilidadeResponse
-from app.services.AgendamentoService import criar_agendamento, obter_horarios_disponiveis
+from app.schemas.AgendamentoSchema import AgendamentoCreate, AgendamentoResponse
+from app.services.AgendamentoService import criar_agendamento, criar_preferencia_mp
 from app.core.database import get_db
 
 router = APIRouter(
@@ -10,33 +9,26 @@ router = APIRouter(
     tags=["Agendamentos"]
 )
 
-@router.post("/agendamento/", response_model=AgendamentoResponse)
+
+@router.post("/", response_model=AgendamentoResponse)
 def post_agendamento(
     agendamento: AgendamentoCreate,
     db: Session = Depends(get_db)
 ):
     """
-    Cria um novo agendamento.
+    Cria um agendamento e retorna a preferência de pagamento do Mercado Pago.
     """
-    return criar_agendamento(db, agendamento)
-
-@router.get("/agendamento/disponibilidade/", response_model=DisponibilidadeResponse)
-def get_horarios_disponiveis(
-    barbeiro_id: int = Query(..., description="ID do barbeiro"),
-    servico_id: int = Query(..., description="ID do serviço"),
-    data: date = Query(..., description="Data desejada (YYYY-MM-DD)"),
-    db: Session = Depends(get_db)
-):
-    """
-    Retorna todos os horários disponíveis para um barbeiro e serviço em uma data específica.
+    try:
+        novo_agendamento = criar_agendamento(db, agendamento)
+    except Exception as e:
+        raise HTTPException(500, "Erro ao criar agendamento")
     
-    Considera:
-    - Horário de expediente do barbeiro
-    - Horário de almoço
-    - Agendamentos já existentes
-    - Duração do serviço
+    try:
+        preference_id = criar_preferencia_mp(novo_agendamento, agendamento.valor_servico)
+    except Exception as e:
+        raise HTTPException(500, "Erro ao criar pagamento no Mercado Pago")
     
-    Exemplo de uso:
-    GET /agendamento/disponibilidade/?barbeiro_id=6&servico_id=8&data=2025-11-26
-    """
-    return obter_horarios_disponiveis(db, barbeiro_id, servico_id, data)
+    return {
+        **novo_agendamento.__dict__,
+        "preferenceId": preference_id
+    }

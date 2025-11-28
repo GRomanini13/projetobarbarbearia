@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, ForeignKey, DateTime, String
+from sqlalchemy import Column, Float, Integer, ForeignKey, DateTime, Numeric, String
 from sqlalchemy.orm import relationship
 from app.core.database import Base
 
@@ -13,6 +13,7 @@ class Agendamento(Base):
     data_hora_fim = Column(DateTime, nullable=False)
     observacao = Column(String, nullable=True)
     status_id = Column(Integer, default=1)
+    preco = Column(Numeric(10,2), nullable=False, default=0)
     
     # Relacionamentos
     cliente = relationship(

@@ -19,15 +19,11 @@ from app.controller.WebhookController import router as webhook_router
 from app.middleware.disable_signature_for_webhook import SignatureMiddleware
 
 
-# -------------------------------------------------------------
 # APP
-# -------------------------------------------------------------
 app = FastAPI(title="API Barbearia")
 
 
-# -------------------------------------------------------------
 # MERCADO PAGO CONFIG
-# -------------------------------------------------------------
 load_dotenv()
 mp_access_token = os.getenv("MERCADOPAGO_ACCESS_TOKEN")
 
@@ -38,9 +34,7 @@ sdk = mercadopago.SDK(mp_access_token)
 app.state.mp_sdk = sdk  # torna disponível para rotas
 
 
-# -------------------------------------------------------------
 # CORS
-# -------------------------------------------------------------
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],  # ajustar na produção
@@ -50,15 +44,11 @@ app.add_middleware(
 )
 
 
-# -------------------------------------------------------------
 # Signature Middleware (Webhook)
-# -------------------------------------------------------------
 app.add_middleware(SignatureMiddleware)
 
 
-# -------------------------------------------------------------
 # Debug Middleware
-# -------------------------------------------------------------
 @app.middleware("http")
 async def debug_middleware(request: Request, call_next):
     print(f">>> DEBUG: {request.method} {request.url.path}")
@@ -66,9 +56,7 @@ async def debug_middleware(request: Request, call_next):
     return response
 
 
-# -------------------------------------------------------------
 # Banco de Dados
-# -------------------------------------------------------------
 print("Criando tabelas no banco de dados...")
 Base.metadata.create_all(bind=engine)
 
@@ -77,9 +65,7 @@ for table in Base.metadata.tables.keys():
     print(f" - {table}")
 
 
-# -------------------------------------------------------------
 # Rotas
-# -------------------------------------------------------------
 app.include_router(usuario_router)
 app.include_router(servico_router)
 app.include_router(agendamento_router)
@@ -88,9 +74,7 @@ app.include_router(mp_router)
 app.include_router(webhook_router)
 
 
-# -------------------------------------------------------------
 # Rota raiz
-# -------------------------------------------------------------
 @app.get("/")
 def read_root():
     return {"msg": "API da Barbearia rodando"}

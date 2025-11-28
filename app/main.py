@@ -1,61 +1,85 @@
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from app.core.database import Base, engine
-import app.models
-import os # <-- 1. Importação necessária para usar os.getenv()
+from dotenv import load_dotenv
+import mercadopago
+import os
 
+from app.core.database import Base, engine
+import app.models  # registra os models
+
+# Controllers / Routes
+from app.controller.UsuarioController import router as usuario_router
 from app.controller.ServicoController import router as servico_router
 from app.controller.AgendamentoController import router as agendamento_router
 from app.controller.PagamentosController import router as pagamentos_router
 from app.routes.MercadoPagoRoutes import router as mp_router
 from app.controller.WebhookController import router as webhook_router
-from app.controller.UsuarioController import router as usuario_router
 
+# Middleware
 from app.middleware.disable_signature_for_webhook import SignatureMiddleware
-import mercadopago
-from dotenv import load_dotenv
 
+
+# -------------------------------------------------------------
+# APP
+# -------------------------------------------------------------
 app = FastAPI(title="API Barbearia")
 
-# --- Configuração do Mercado Pago ---
-load_dotenv()  # Carrega variáveis de ambiente do arquivo .env
+
+# -------------------------------------------------------------
+# MERCADO PAGO CONFIG
+# -------------------------------------------------------------
+load_dotenv()
 mp_access_token = os.getenv("MERCADOPAGO_ACCESS_TOKEN")
 
 if not mp_access_token:
-    print("ERRO: MERCADOPAGO_ACCESS_TOKEN não encontrado nas variáveis de ambiente.")
-    # Aqui você pode optar por levantar uma exceção ou usar um token de teste
-    # Mas para produção, isso é crítico.
-    
-# 2. Inicialização CORRETA: Passando a variável carregada
+    print("ERRO: MERCADOPAGO_ACCESS_TOKEN não encontrado nas variáveis de ambiente!")
+
 sdk = mercadopago.SDK(mp_access_token)
+app.state.mp_sdk = sdk  # torna disponível para rotas
 
-# 3. Anexar o SDK ao estado da aplicação para que possa ser injetado nas rotas
-app.state.mp_sdk = sdk
-# ------------------------------------
 
-#  CORS primeiro (não afeta o webhook)
+# -------------------------------------------------------------
+# CORS
+# -------------------------------------------------------------
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["*"],  # ajustar na produção
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-#  SignatureMiddleware (antes de chamar as rotas)
+
+# -------------------------------------------------------------
+# Signature Middleware (Webhook)
+# -------------------------------------------------------------
 app.add_middleware(SignatureMiddleware)
 
-# Debug (pode ser antes das rotas também)
+
+# -------------------------------------------------------------
+# Debug Middleware
+# -------------------------------------------------------------
 @app.middleware("http")
 async def debug_middleware(request: Request, call_next):
-    print(">>> Passou no debug_middleware:", request.url.path)
-    return await call_next(request)
+    print(f">>> DEBUG: {request.method} {request.url.path}")
+    response = await call_next(request)
+    return response
 
-#  Banco
+
+# -------------------------------------------------------------
+# Banco de Dados
+# -------------------------------------------------------------
 print("Criando tabelas no banco de dados...")
 Base.metadata.create_all(bind=engine)
 
-#  Rotas
+print("Tabelas criadas (ou já existentes):")
+for table in Base.metadata.tables.keys():
+    print(f" - {table}")
+
+
+# -------------------------------------------------------------
+# Rotas
+# -------------------------------------------------------------
 app.include_router(usuario_router)
 app.include_router(servico_router)
 app.include_router(agendamento_router)
@@ -64,6 +88,9 @@ app.include_router(mp_router)
 app.include_router(webhook_router)
 
 
+# -------------------------------------------------------------
+# Rota raiz
+# -------------------------------------------------------------
 @app.get("/")
 def read_root():
     return {"msg": "API da Barbearia rodando"}

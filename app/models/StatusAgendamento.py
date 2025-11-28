@@ -7,3 +7,5 @@ class StatusAgendamento(Base):
     nome = Column(String(50), unique=True, nullable=False)
     descricao = Column(String(200), nullable=True)
     ativo = Column(Boolean, default=True)
+
+

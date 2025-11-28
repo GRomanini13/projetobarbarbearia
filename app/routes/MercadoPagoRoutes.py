@@ -9,7 +9,7 @@ WEBHOOK_KEY = os.getenv("WEBHOOK_KEY")
 @router.get("/criar_preferencia")
 def criar_preferencia_route():
     try:
-        pref = criar_preferencia("Produto Teste", 1, 10.0)
+        pref = criar_preferencia("Produto Teste", 1, 0.01)
         return {
             "id": pref.get("id"),
             "init_point": pref.get("init_point"),

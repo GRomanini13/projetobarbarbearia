@@ -4,27 +4,155 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Recuperar Senha - Barbearia</title>
-    <link rel="stylesheet" href="main.css">
+    
+    <!-- Fonte e Ícones -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <style>
+        :root {
+            --primary: #333333; 
+            --secondary: #f0f0f0; 
+            --accent: #A18522; 
+            --highlight: #D4AF37; 
+            --light: #ffffff; 
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            --border-radius: 20px;
+            --transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            --danger: #e94560;
+            --success: #28a745;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, var(--light) 0%, #f9f9f9 100%);
+            margin: 0; padding: 0;
+            color: var(--primary);
+            min-height: 100vh;
+            display: flex; justify-content: center; align-items: center;
+            position: relative; overflow: hidden;
+        }
+
+        /* Fundo Animado */
+        body::before {
+            content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+            background: radial-gradient(circle, rgba(161, 133, 34, 0.1) 0%, transparent 70%);
+            animation: rotate 20s linear infinite;
+        }
+        @keyframes rotate { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .background-image {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: url('imagens/Imagem do WhatsApp de 2025-11-17 à(s) 19.55.45_787eb28d.jpg') no-repeat center center;
+            background-size: cover; opacity: 0.1; z-index: -1;
+        }
+
+        .login-container {
+            background: var(--light);
+            border: 2px solid var(--accent);
+            border-radius: var(--border-radius);
+            padding: 50px;
+            max-width: 500px; width: 90%;
+            box-shadow: var(--shadow);
+            position: relative; z-index: 1;
+            animation: fadeIn 0.8s ease-out;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+
+        .logo { text-align: center; margin-bottom: 40px; }
+        .logo img {
+            width: 100px; height: 100px; border-radius: 50%;
+            border: 4px solid var(--accent); margin-bottom: 20px; transition: var(--transition);
+        }
+        .logo img:hover { transform: scale(1.05); border-color: var(--highlight); }
+
+        .descsenha { color: var(--accent); font-size: 1.8em; margin-bottom: 10px; font-weight: 700; text-align: center; }
+        .subtitle { color: var(--primary); font-size: 1em; text-align: center; margin-bottom: 30px; }
+
+        form { display: flex; flex-direction: column; }
+        
+        label { margin-bottom: 8px; color: var(--accent); font-weight: 600; font-size: 1.1em; }
+        
+        input {
+            padding: 18px 20px; border: 2px solid var(--accent);
+            border-radius: var(--border-radius); font-size: 1.1em;
+            background: var(--light); transition: var(--transition);
+            margin-bottom: 20px; color: black; outline: none;
+        }
+        input:focus { border-color: var(--highlight); box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.1); }
+
+        /* MENSAGENS FLUTUANTES */
+        .feedback-message {
+            display: none; /* Escondido por padrão */
+            padding: 15px; border-radius: var(--border-radius);
+            margin-bottom: 20px; font-weight: 600;
+            align-items: center; gap: 10px; color: white;
+            animation: slideDown 0.3s ease-out;
+        }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .feedback-message.error { background: linear-gradient(135deg, #e94560, #ff6b6b); }
+        .feedback-message.success { background: linear-gradient(135deg, #28a745, #20c997); }
+        .feedback-message i { font-size: 1.2em; }
+
+        /* ESTILO DO BOTÃO CORRIGIDO */
+        button {
+            width: 100%; /* Largura total */
+            padding: 18px 30px; 
+            border: 2px solid var(--accent); 
+            border-radius: var(--border-radius);
+            background: var(--accent); /* Fundo sólido dourado */
+            color: var(--light); /* Texto branco */
+            font-size: 1.1em; 
+            font-weight: 600;
+            cursor: pointer; 
+            transition: var(--transition); 
+            box-shadow: var(--shadow);
+            position: relative; 
+            overflow: hidden; 
+            margin-bottom: 20px;
+        }
+        
+        button:hover { 
+            background: var(--highlight); 
+            border-color: var(--highlight); 
+            transform: translateY(-3px); 
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2); 
+        }
+
+        .links { display: flex; justify-content: center; font-size: 0.9em; }
+        .links a { color: var(--accent); text-decoration: none; font-weight: 500; transition: var(--transition); }
+        .links a:hover { color: var(--highlight); text-decoration: underline; }
+
+        @media (max-width: 768px) {
+            .login-container { padding: 30px 20px; }
+            .descsenha { font-size: 1.5em; }
+        }
+    </style>
 </head>
 <body>
+    <div class="background-image"></div>
+
     <div class="login-container">
         <div class="logo">
-            <img src="imagens/1600w-4LyCMRxIajk.webp" alt="Logo Barbearia">
+            <img src="imagens/Imagem do WhatsApp de 2025-11-17 à(s) 19.55.45_787eb28d.jpg" alt="Logo Barbearia" onerror="this.style.display='none'">
+            <h1 class="descsenha"><i class="fas fa-key"></i> Recuperar Senha</h1>
+            <p class="subtitle">Informe seu e-mail para continuar</p>
         </div>
 
-        <h1 class="descsenha">Recuperar Senha</h1>
-        <p class="subtitle">Informe seu e-mail para redefinir a senha</p>
-
         <form id="forgotForm">
-            <label for="email">E-mail cadastrado</label>
-            <input type="email" id="email" name="email" required>
+            <label for="email"><i class="fas fa-envelope"></i> E-mail cadastrado</label>
+            <input type="email" id="email" name="email" placeholder="Digite seu e-mail" required>
 
-            <div id="message" class="info-message"></div>
+            <!-- Área unificada de mensagens -->
+            <div id="message" class="feedback-message"></div>
 
-            <button type="submit" class="butao">Enviar link de redefinição</button>
+            <button type="submit" id="btnSubmit"><i class="fas fa-paper-plane"></i> Redefinir senha</button>
 
             <div class="links">
-                <a href="main.html">Voltar ao login</a>
+                <a href="main.html"><i class="fas fa-arrow-left"></i> Voltar ao login</a>
             </div>
         </form>
     </div>
@@ -32,41 +160,73 @@
     <script>
         const form = document.getElementById('forgotForm');
         const msg = document.getElementById('message');
+        const btnSubmit = document.getElementById('btnSubmit');
+
+        // Função auxiliar para mostrar mensagens
+        function showFeedback(text, type) {
+            msg.style.display = 'flex'; // Garante que apareça
+            msg.className = `feedback-message ${type}`; // Define a cor (erro ou sucesso)
+            
+            // Ícones baseados no tipo
+            const icon = type === 'error' ? 'fa-exclamation-triangle' : 'fa-check-circle';
+            msg.innerHTML = `<i class="fas ${icon}"></i> ${text}`;
+        }
 
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
-            msg.style.display = "none";
-            msg.textContent = "";
+
+            // Limpa mensagem anterior e desabilita botão
+            msg.style.display = 'none';
+            btnSubmit.disabled = true;
+            btnSubmit.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verificando...';
 
             const email = document.getElementById('email').value.trim();
 
             if (!email) {
-                msg.textContent = "Por favor, informe seu e-mail.";
-                msg.className = "error-message";
-                msg.style.display = "block";
+                showFeedback("Por favor, digite seu e-mail.", "error");
+                btnSubmit.disabled = false;
+                btnSubmit.innerHTML = '<i class="fas fa-paper-plane"></i> Redefinir senha';
                 return;
             }
 
             try {
-                const response = await fetch("http://127.0.0.1:8000/usuarios/redefinir_senha", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ email })
-                });
-
-                if (response.ok) {
-                    msg.className = "success-message";
-                    msg.textContent = "Se o e-mail existir no sistema, enviaremos instruções para redefinição.";
-                } else {
-                    msg.className = "error-message";
-                    msg.textContent = "Erro ao processar a solicitação. Tente novamente.";
+                console.log("Buscando usuários...");
+                
+                // 1. Busca usuários na API
+                const response = await fetch("http://127.0.0.1:8000/usuarios/");
+                
+                if (!response.ok) {
+                    throw new Error("Erro ao conectar com servidor");
                 }
 
-                msg.style.display = "block";
+                const usuarios = await response.json();
+                console.log("Usuários encontrados:", usuarios.length);
+
+                // 2. Procura o e-mail (case insensitive)
+                const usuarioEncontrado = usuarios.find(u => u.email.toLowerCase() === email.toLowerCase());
+
+                if (!usuarioEncontrado) {
+                    showFeedback("E-mail não encontrado no sistema.", "error");
+                    btnSubmit.disabled = false;
+                    btnSubmit.innerHTML = '<i class="fas fa-paper-plane"></i> Redefinir senha';
+                    return;
+                }
+
+                // 3. SUCCESSO!
+                localStorage.setItem("emailRedefinir", email);
+                
+                showFeedback("E-mail encontrado! Redirecionando...", "success");
+                
+                // Aguarda 2 segundos para o usuário ler a mensagem
+                setTimeout(() => {
+                    window.location.href = "novasenha.html";
+                }, 2000);
+
             } catch (error) {
-                msg.className = "error-message";
-                msg.textContent = "Falha na comunicação com o servidor.";
-                msg.style.display = "block";
+                console.error(error);
+                showFeedback("Erro de conexão com a API.", "error");
+                btnSubmit.disabled = false;
+                btnSubmit.innerHTML = '<i class="fas fa-paper-plane"></i> Redefinir senha';
             }
         });
     </script>

@@ -4,10 +4,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Barbearia</title>
-    
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <title>Definir Nova Senha</title>
 
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
     <style>
@@ -29,16 +28,13 @@
 
         * {
             box-sizing: border-box;
-            margin: 0;
-            padding: 0;
         }
 
-        /* -------------------------- */
-        /* BODY & BACKGROUND (Estilo Agendamento) */
-        /* -------------------------- */
         body {
             font-family: 'Inter', sans-serif;
             background: linear-gradient(135deg, var(--light) 0%, #f9f9f9 100%);
+            margin: 0;
+            padding: 0;
             color: var(--primary);
             min-height: 100vh;
             display: flex;
@@ -46,7 +42,6 @@
             align-items: center;
             position: relative;
             overflow: hidden;
-            flex-direction: column;
         }
 
         body::before {
@@ -107,21 +102,23 @@
             height: 100px;
             border-radius: 50%;
             border: 4px solid var(--accent);
-            margin-bottom: 20px;
-            transition: var(--transition);
+            margin-bottom: 15px;
+            box-shadow: var(--shadow);
+            display: inline-block;
         }
 
-        .logo h1 {
+        .descsenha {
             color: var(--accent);
             font-size: 2em;
-            margin-bottom: 5px;
+            margin-bottom: 10px;
             font-weight: 700;
         }
 
-        .logo p {
+        .subtitle {
             color: var(--primary);
             font-size: 1em;
             font-weight: 400;
+            margin-bottom: 30px;
         }
 
         form {
@@ -131,7 +128,7 @@
 
         label {
             margin-bottom: 10px;
-            color: var(--accent); /* Usando Accent para labels */
+            color: var(--accent);
             font-weight: 600;
             font-size: 1.1em;
             text-align: left;
@@ -156,29 +153,43 @@
             outline: none;
         }
 
-        /* Mensagem de Erro Padrão */
-        .error-message {
-            display: none;
-            background: linear-gradient(135deg, #e94560, #ff6b6b);
-            color: var(--light);
+        /* ESTILOS DE MENSAGENS (Corrigido para exibir display: flex) */
+        .error-message,
+        .info-message {
             padding: 15px;
             border-radius: var(--border-radius);
             margin-bottom: 20px;
             font-weight: 600;
-            align-items: center;
             gap: 10px;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            display: none; /* Inicialmente oculto */
         }
 
-        .error-message.show {
+        .error-message {
+            background: linear-gradient(135deg, #e94560, #ff6b6b);
+            color: var(--light);
+        }
+
+        .info-message {
+            background: linear-gradient(135deg, #28a745, #20c997); /* Cor de sucesso */
+            color: var(--light);
+        }
+
+        /* CLASSE SHOW (Garante que a mensagem seja exibida) */
+        .error-message.show,
+        .info-message.show {
             display: flex;
         }
+        /* FIM ESTILOS DE MENSAGENS */
 
-        /* Estilo do Botão */
+
         button {
             padding: 18px 30px;
             border: 2px solid var(--accent);
             border-radius: var(--border-radius);
-            background: var(--accent); /* Cor de destaque para o botão principal */
+            background: var(--accent); /* Botão de ação principal em destaque */
             color: var(--light);
             font-size: 1.1em;
             font-weight: 600;
@@ -199,9 +210,8 @@
 
         .links {
             display: flex;
-            justify-content: space-between;
+            justify-content: center;
             font-size: 0.9em;
-            margin-top: -10px; /* Ajuste para compensar a margem do input */
         }
 
         .links a {
@@ -232,93 +242,106 @@
     <div class="login-container">
         <div class="logo">
             <img src="imagens/Imagem do WhatsApp de 2025-11-17 à(s) 19.55.45_787eb28d.jpg" alt="Logo Barbearia" onerror="this.style.display='none'">
-            <h1><i class="fas fa-cut"></i> Barbearia Silver Barber</h1>
-            <p>Estilo, tradição e elegância</p>
+            <h1 class="descsenha"><i class="fas fa-key"></i> Definir Nova Senha</h1>
+            <p class="subtitle">Insira sua nova senha para continuar</p>
         </div>
 
-        <form id="loginForm">
-            <label for="username"><i class="fas fa-user"></i> Usuário</label>
-            <input type="text" id="username" name="username" placeholder="Digite seu usuário" required>
+        <form id="newPasswordForm">
+            <label for="password"><i class="fas fa-lock"></i> Nova Senha</label>
+            <input type="password" id="password" name="password" placeholder="Digite sua nova senha" required>
 
-            <label for="password"><i class="fas fa-lock"></i> Senha</label>
-            <input type="password" id="password" name="password" placeholder="Digite sua senha" required>
+            <div id="message" class="info-message"></div>
 
-            <div id="errorMessage" class="error-message"></div>
-            
-            <button type="submit"><i class="fas fa-sign-in-alt"></i> Entrar</button>
+            <button type="submit" class="butao"><i class="fas fa-save"></i> Salvar Nova Senha</button>
 
             <div class="links">
-                <a href="redefinirsenha.html" id="forgotPassword"><i class="fas fa-key"></i> Esqueceu a senha?</a>
-                <a href="cadastro.html" id="register"><i class="fas fa-user-plus"></i> Cadastrar-se</a>
+                <a href="redefinirsenha.html"><i class="fas fa-arrow-left"></i> Voltar</a>
             </div>
         </form>
     </div>
 
     <script>
-        const form = document.getElementById("loginForm");
-        const message = document.getElementById("errorMessage");
+        const form = document.getElementById('newPasswordForm');
+        const msg = document.getElementById('message');
 
-        form.addEventListener("submit", async function(event) {
-            event.preventDefault();
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            msg.classList.remove("show"); // Esconde qualquer mensagem anterior
+            msg.innerHTML = '';
 
-            const username = document.getElementById("username").value.trim();
-            const password = document.getElementById("password").value.trim();
+            const password = document.getElementById('password').value.trim();
 
-            // Resetar mensagem de erro
-            message.innerHTML = "";
-            message.classList.remove("show");
+            // 1. Recupera o email salvo
+            const email = localStorage.getItem("emailRedefinir");
 
-            if (!username || !password) {
-                message.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Por favor, preencha todos os campos.`;
-                message.classList.add("show");
+            if (!email) {
+                msg.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Erro: e-mail de redefinição não encontrado!`;
+                msg.className = "error-message";
+                msg.classList.add("show");
+                return;
+            }
+
+            // 2. Validação básica de senha
+            if (password.length < 6) {
+                msg.innerHTML = `<i class="fas fa-times-circle"></i> A senha deve ter pelo menos 6 caracteres.`;
+                msg.className = "error-message";
+                msg.classList.add("show");
                 return;
             }
 
             try {
-                const formData = new FormData();
-                formData.append("email", username);
-                formData.append("senha", password);
-
-                const response = await fetch("http://127.0.0.1:8000/usuarios/login", {
-                    method: "POST",
-                    // NOTE: FormData não requer Content-Type: application/json
-                    body: formData
+                // 3. Chamar a rota PUT para trocar a senha
+                const response = await fetch("http://127.0.0.1:8000/usuarios/reset-senha", {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email, nova_senha: password })
                 });
 
-                if (response.status === 401 || response.status === 404) {
-                    message.innerHTML = `<i class="fas fa-times-circle"></i> Usuário ou senha incorretos!`;
-                    message.classList.add("show");
-                    return;
-                }
-                
-                if (!response.ok) {
-                    throw new Error(`Erro de servidor (${response.status})`);
-                }
+                if (response.ok) {
+                    msg.innerHTML = `<i class="fas fa-check-circle"></i> Senha alterada com sucesso! Redirecionando...`;
+                    msg.className = "info-message"; // Usa info-message para sucesso
+                    msg.classList.add("show");
 
-                const data = await response.json();
+                    // 4. Limpa o email e redireciona
+                    localStorage.removeItem("emailRedefinir");
 
-                // 🔥 Se o login for bem-sucedido e a API retornar dados válidos
-                if (data && data.idusuario) {
-                    localStorage.setItem("usuarioLogado", JSON.stringify(data));
+                    setTimeout(() => {
+                        window.location.href = "main.html"; // Ajuste para a sua tela principal de login ou dashboard
+                    }, 1500);
 
-                    // Redirecionamento baseado no status do barbeiro
-                    if (data.is_barbeiro === true) {
-                        window.location.href = "horasmarcadas.html";
-                    } else {
-                        window.location.href = "cliente.html";
-                    }
                 } else {
-                    // Caso a resposta seja OK (200), mas o JSON esteja incompleto
-                    message.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Resposta inválida do servidor. Tente novamente.`;
-                    message.classList.add("show");
+                    // Tenta ler a mensagem de erro do backend
+                    let errorText = "Erro ao alterar senha. Tente novamente.";
+                    try {
+                        const errorData = await response.json();
+                        if (errorData.detail) {
+                            if (typeof errorData.detail === 'string') {
+                                errorText = errorData.detail;
+                            } else if (Array.isArray(errorData.detail) && errorData.detail.length > 0) {
+                                errorText = `Erro de validação: ${errorData.detail[0].msg}`;
+                            } else {
+                                errorText = "Erro desconhecido de validação.";
+                            }
+                        } else {
+                            errorText = `Erro ${response.status}: Falha na API.`;
+                        }
+                    } catch (e) {
+                        errorText = `Erro ${response.status}: Falha na comunicação.`;
+                    }
+                    
+                    msg.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${errorText}`;
+                    msg.className = "error-message";
+                    msg.classList.add("show");
                 }
 
             } catch (error) {
-                console.error(error);
-                message.innerHTML = `<i class="fas fa-bomb"></i> Erro de conexão ou credenciais inválidas.`;
-                message.classList.add("show");
+                msg.innerHTML = `<i class="fas fa-bomb"></i> Erro de conexão com o servidor. Verifique se o backend está ativo.`;
+                msg.className = "error-message";
+                msg.classList.add("show");
             }
         });
     </script>
+
 </body>
+
 </html>

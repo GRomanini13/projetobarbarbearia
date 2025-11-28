@@ -1,27 +1,22 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Barbearia</title>
-    
+    <title>Excluir Serviço</title>
+
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 
     <style>
         :root {
-            --primary: #333333;
-            /* Cinza escuro para texto */
-            --secondary: #f0f0f0;
-            /* Cinza claro */
-            --accent: #A18522;
-            /* Dourado */
-            --highlight: #D4AF37;
-            /* Dourado brilhante */
-            --light: #ffffff;
-            /* Branco */
+            --primary: #333333; /* Cinza escuro para texto */
+            --secondary: #f0f0f0; /* Cinza claro */
+            --accent: #A18522; /* Dourado */
+            --highlight: #D4AF37; /* Dourado brilhante */
+            --light: #ffffff; /* Branco */
             --shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
             --border-radius: 20px;
             --transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
@@ -33,12 +28,11 @@
             padding: 0;
         }
 
-        /* -------------------------- */
-        /* BODY & BACKGROUND (Estilo Agendamento) */
-        /* -------------------------- */
         body {
             font-family: 'Inter', sans-serif;
             background: linear-gradient(135deg, var(--light) 0%, #f9f9f9 100%);
+            margin: 0;
+            padding: 0;
             color: var(--primary);
             min-height: 100vh;
             display: flex;
@@ -77,16 +71,14 @@
             z-index: -1;
         }
 
-        /* CONTAINER PRINCIPAL (Mesmo estilo de agendamento) */
         .login-container {
             background: var(--light);
             border: 2px solid var(--accent);
             border-radius: var(--border-radius);
-            padding: 50px;
+            padding: 30px;
             max-width: 500px;
-            width: 90%;
+            width: 100%;
             box-shadow: var(--shadow);
-            text-align: center;
             position: relative;
             z-index: 1;
             animation: fadeIn 0.8s ease-out;
@@ -99,28 +91,28 @@
 
         .logo {
             text-align: center;
-            margin-bottom: 40px;
+            margin-bottom: 20px;
         }
 
         .logo img {
-            width: 100px;
-            height: 100px;
+            width: 80px;
+            height: 80px;
             border-radius: 50%;
             border: 4px solid var(--accent);
-            margin-bottom: 20px;
+            margin-bottom: 15px;
             transition: var(--transition);
         }
 
         .logo h1 {
             color: var(--accent);
-            font-size: 2em;
+            font-size: 1.8em;
             margin-bottom: 5px;
             font-weight: 700;
         }
 
         .logo p {
             color: var(--primary);
-            font-size: 1em;
+            font-size: 0.9em;
             font-weight: 400;
         }
 
@@ -130,23 +122,22 @@
         }
 
         label {
-            margin-bottom: 10px;
-            color: var(--accent); /* Usando Accent para labels */
+            margin-bottom: 5px;
+            color: var(--accent);
             font-weight: 600;
-            font-size: 1.1em;
-            text-align: left;
+            font-size: 1em;
         }
 
         input {
-            padding: 18px 20px;
+            padding: 15px 18px;
             border: 2px solid var(--accent);
             border-radius: var(--border-radius);
-            font-size: 1.1em;
+            font-size: 1em;
             background: var(--light);
             transition: var(--transition);
             box-sizing: border-box;
             font-family: inherit;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
             color: black;
         }
 
@@ -156,38 +147,54 @@
             outline: none;
         }
 
-        /* Mensagem de Erro Padrão */
-        .error-message {
-            display: none;
-            background: linear-gradient(135deg, #e94560, #ff6b6b);
-            color: var(--light);
-            padding: 15px;
+        /* ESTILOS DE MENSAGENS */
+        .error-message,
+        .success-message {
+            padding: 12px;
             border-radius: var(--border-radius);
-            margin-bottom: 20px;
+            margin-bottom: 10px;
             font-weight: 600;
-            align-items: center;
             gap: 10px;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            display: none;
         }
 
-        .error-message.show {
+        .error-message {
+            background: linear-gradient(135deg, #e94560, #ff6b6b);
+            color: var(--light);
+        }
+
+        .success-message {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: var(--light);
+        }
+
+        .error-message.show,
+        .success-message.show {
             display: flex;
         }
 
-        /* Estilo do Botão */
+        .error-icon {
+            width: 18px;
+            height: 18px;
+        }
+
         button {
-            padding: 18px 30px;
+            padding: 15px 25px;
             border: 2px solid var(--accent);
             border-radius: var(--border-radius);
-            background: var(--accent); /* Cor de destaque para o botão principal */
+            background: var(--accent);
             color: var(--light);
-            font-size: 1.1em;
+            font-size: 1em;
             font-weight: 600;
             cursor: pointer;
             transition: var(--transition);
             box-shadow: var(--shadow);
             position: relative;
             overflow: hidden;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
         }
 
         button:hover {
@@ -197,11 +204,19 @@
             box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
         }
 
+        button:hover i {
+            color: var(--light);
+        }
+
+        button i {
+            transition: var(--transition);
+            color: var(--light);
+        }
+
         .links {
             display: flex;
-            justify-content: space-between;
-            font-size: 0.9em;
-            margin-top: -10px; /* Ajuste para compensar a margem do input */
+            justify-content: center;
+            font-size: 0.8em;
         }
 
         .links a {
@@ -216,10 +231,9 @@
             text-decoration: underline;
         }
 
-        /* Responsividade */
         @media (max-width: 768px) {
             .login-container {
-                padding: 30px 20px;
+                padding: 20px;
                 margin: 20px;
             }
         }
@@ -232,93 +246,90 @@
     <div class="login-container">
         <div class="logo">
             <img src="imagens/Imagem do WhatsApp de 2025-11-17 à(s) 19.55.45_787eb28d.jpg" alt="Logo Barbearia" onerror="this.style.display='none'">
-            <h1><i class="fas fa-cut"></i> Barbearia Silver Barber</h1>
-            <p>Estilo, tradição e elegância</p>
+            <h1><i class="fas fa-trash-alt"></i> Excluir Serviço</h1>
+            <p>Excluir Serviço</p>
         </div>
 
-        <form id="loginForm">
-            <label for="username"><i class="fas fa-user"></i> Usuário</label>
-            <input type="text" id="username" name="username" placeholder="Digite seu usuário" required>
-
-            <label for="password"><i class="fas fa-lock"></i> Senha</label>
-            <input type="password" id="password" name="password" placeholder="Digite sua senha" required>
-
+        <form id="deleteServiceForm">
             <div id="errorMessage" class="error-message"></div>
-            
-            <button type="submit"><i class="fas fa-sign-in-alt"></i> Entrar</button>
+
+            <label for="servico_id"><i class="fas fa-hashtag"></i> ID do Serviço</label>
+            <input type="number" id="servico_id" name="servico_id" placeholder="Ex: 1" required>
+
+            <button type="submit"><i class="fas fa-trash"></i> Excluir Serviço</button>
 
             <div class="links">
-                <a href="redefinirsenha.html" id="forgotPassword"><i class="fas fa-key"></i> Esqueceu a senha?</a>
-                <a href="cadastro.html" id="register"><i class="fas fa-user-plus"></i> Cadastrar-se</a>
+                <a href="editarservico.html"><i class="fas fa-arrow-left"></i> Voltar</a>
             </div>
         </form>
     </div>
 
     <script>
-        const form = document.getElementById("loginForm");
+        const form = document.getElementById("deleteServiceForm");
         const message = document.getElementById("errorMessage");
 
-        form.addEventListener("submit", async function(event) {
+        form.addEventListener("submit", async function (event) {
             event.preventDefault();
 
-            const username = document.getElementById("username").value.trim();
-            const password = document.getElementById("password").value.trim();
+            const id = document.getElementById("servico_id").value.trim();
 
-            // Resetar mensagem de erro
+            // Resetar mensagem
             message.innerHTML = "";
-            message.classList.remove("show");
+            message.classList.remove("show", "error-message", "success-message");
 
-            if (!username || !password) {
-                message.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Por favor, preencha todos os campos.`;
+            if (!id) {
+                message.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Informe um ID válido.`;
+                message.className = "error-message";
                 message.classList.add("show");
                 return;
             }
 
             try {
-                const formData = new FormData();
-                formData.append("email", username);
-                formData.append("senha", password);
-
-                const response = await fetch("http://127.0.0.1:8000/usuarios/login", {
-                    method: "POST",
-                    // NOTE: FormData não requer Content-Type: application/json
-                    body: formData
+                const response = await fetch(`http://127.0.0.1:8000/servicos/${id}`, {
+                    method: "DELETE"
                 });
 
-                if (response.status === 401 || response.status === 404) {
-                    message.innerHTML = `<i class="fas fa-times-circle"></i> Usuário ou senha incorretos!`;
+                if (response.ok) {
+                    message.innerHTML = `<i class="fas fa-check-circle"></i> Serviço excluído com sucesso!`;
+                    message.className = "success-message";
                     message.classList.add("show");
-                    return;
-                }
-                
-                if (!response.ok) {
-                    throw new Error(`Erro de servidor (${response.status})`);
-                }
+                    document.getElementById("servico_id").value = "";
 
-                const data = await response.json();
-
-                // 🔥 Se o login for bem-sucedido e a API retornar dados válidos
-                if (data && data.idusuario) {
-                    localStorage.setItem("usuarioLogado", JSON.stringify(data));
-
-                    // Redirecionamento baseado no status do barbeiro
-                    if (data.is_barbeiro === true) {
-                        window.location.href = "horasmarcadas.html";
-                    } else {
-                        window.location.href = "cliente.html";
-                    }
                 } else {
-                    // Caso a resposta seja OK (200), mas o JSON esteja incompleto
-                    message.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Resposta inválida do servidor. Tente novamente.`;
+                    // Tratar erro detalhado do servidor (400, 422, etc.)
+                    let errorText = "Erro ao excluir serviço. Tente novamente.";
+                    
+                    try {
+                        const errorData = await response.json();
+                        if (errorData.detail) {
+                            if (typeof errorData.detail === 'string') {
+                                errorText = errorData.detail;
+                            } else if (Array.isArray(errorData.detail) && errorData.detail.length > 0) {
+                                // 🔥 Exibir o primeiro erro de validação (incluindo o nome do campo)
+                                const firstError = errorData.detail[0];
+                                const location = firstError.loc[firstError.loc.length - 1] || 'campo desconhecido';
+                                errorText = `Erro de validação: ${firstError.msg} no campo '${location}'`;
+                            }
+                        }
+                    } catch (e) {
+                        // Ignora se não for JSON
+                    }
+
+                    message.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${errorText}`;
+                    message.className = "error-message";
                     message.classList.add("show");
+                    console.error("Erro:", response.status, errorText);
                 }
 
             } catch (error) {
-                console.error(error);
-                message.innerHTML = `<i class="fas fa-bomb"></i> Erro de conexão ou credenciais inválidas.`;
+                message.innerHTML = `<i class="fas fa-bomb"></i> Erro de conexão com o servidor. Verifique se o backend está ativo.`;
+                message.className = "error-message";
                 message.classList.add("show");
+                console.error("Erro de Rede:", error);
             }
         });
     </script>
+
 </body>
+
 </html>

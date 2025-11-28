@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cadastro - Barbearia</title>
-    
+    <title>Criar Serviço</title>
+
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -213,7 +213,6 @@
             color: var(--light);
         }
 
-
         .links {
             display: flex;
             justify-content: center;
@@ -247,87 +246,79 @@
     <div class="login-container">
         <div class="logo">
             <img src="imagens/Imagem do WhatsApp de 2025-11-17 à(s) 19.55.45_787eb28d.jpg" alt="Logo Barbearia" onerror="this.style.display='none'">
-            <h1><i class="fas fa-user-plus"></i> Cadastro</h1>
-            <p>Crie sua conta</p>
+            <h1><i class="fas fa-plus-circle"></i> Criar Serviço</h1>
+            <p>Novo Serviço</p>
         </div>
 
-        <form id="registerForm">
+        <form id="serviceForm">
             <div id="errorMessage" class="error-message"></div>
 
-            <label for="name"><i class="fas fa-user"></i> Nome completo</label>
-            <input type="text" id="name" name="name" placeholder="Digite seu nome" required>
+            <label for="nome"><i class="fas fa-tag"></i> Nome do Serviço</label>
+            <input type="text" id="nome" name="nome" placeholder="Ex: Corte de cabelo" required>
 
-            <label for="telefone"><i class="fas fa-phone"></i> Telefone</label>
-            <input type="text" id="telefone" name="telefone" placeholder="Digite seu telefone" required>
+            <label for="preco"><i class="fas fa-dollar-sign"></i> Preço (R$)</label>
+            <input type="number" id="preco" name="preco" step="0.01" placeholder="Ex: 50.00" required>
 
-            <label for="email"><i class="fas fa-envelope"></i> E-mail</label>
-            <input type="email" id="email" name="email" placeholder="Digite seu e-mail" required>
+            <label for="duracao"><i class="fas fa-clock"></i> Duração (minutos)</label>
+            <input type="number" id="duracao" name="duracao" placeholder="Ex: 45" required>
 
-            <label for="password"><i class="fas fa-lock"></i> Senha</label>
-            <input type="password" id="password" name="password" placeholder="Crie uma senha" required>
-
-            <button type="submit"><i class="fas fa-user-plus"></i> Cadastrar</button>
+            <button type="submit"><i class="fas fa-plus"></i> Criar Serviço</button>
 
             <div class="links">
-                <a href="main.html"><i class="fas fa-sign-in-alt"></i> Já tem conta? Entrar</a>
+                <a href="horasmarcadas.html"><i class="fas fa-arrow-left"></i> Voltar</a>
             </div>
         </form>
     </div>
 
     <script>
-        const form = document.getElementById("registerForm");
+        const form = document.getElementById("serviceForm");
         const message = document.getElementById("errorMessage");
 
         form.addEventListener("submit", async function(event) {
             event.preventDefault();
 
-            const name = document.getElementById("name").value.trim();
-            let telefone = document.getElementById("telefone").value.trim(); 
-            const email = document.getElementById("email").value.trim();
-            const password = document.getElementById("password").value.trim();
+            let nome = document.getElementById("nome").value.trim();
+            let preco = parseFloat(document.getElementById("preco").value);
+            let duracao = parseInt(document.getElementById("duracao").value);
 
             // Resetar mensagem
             message.innerHTML = "";
             message.classList.remove("show", "error-message", "success-message");
 
-
-            // Validação simples
-            if (!name || !telefone || !email || !password) {
-                message.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Por favor, preencha todos os campos.`;
+            if (!nome || isNaN(preco) || isNaN(duracao)) {
+                message.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Preencha todos os campos!`;
                 message.className = "error-message";
                 message.classList.add("show");
                 return;
             }
-            
-            // 🔥 CORREÇÃO: Limpar o telefone (remove todos os caracteres não numéricos)
-            telefone = telefone.replace(/\D/g, '');
 
+            const data = {
+                nome: nome,
+                preco: preco,
+                duracao_min: duracao
+            };
 
             try {
-                const response = await fetch("http://127.0.0.1:8000/usuarios/", {
+                const response = await fetch("http://127.0.0.1:8000/servicos/", {
                     method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        nome: name,
-                        telefone: telefone, // Envia telefone limpo
-                        email: email,
-                        senha: password,
-                        is_barbeiro: false // Campo padrão
-                    })
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify(data)
                 });
 
                 if (response.ok) {
-                    message.innerHTML = `<i class="fas fa-check-circle"></i> Cadastro realizado com sucesso! Redirecionando...`;
+                    message.innerHTML = `<i class="fas fa-check-circle"></i> Serviço criado com sucesso!`;
                     message.className = "success-message";
                     message.classList.add("show");
 
-                    setTimeout(() => {
-                        window.location.href = "main.html";
-                    }, 1500);
+                    document.getElementById("nome").value = "";
+                    document.getElementById("preco").value = "";
+                    document.getElementById("duracao").value = "";
 
                 } else {
                     // Tratar erro detalhado do servidor (400, 422, etc.)
-                    let errorText = "Erro ao cadastrar usuário. Tente novamente.";
+                    let errorText = "Erro ao criar serviço. Tente novamente.";
                     
                     try {
                         const errorData = await response.json();
@@ -359,5 +350,7 @@
             }
         });
     </script>
+
 </body>
+
 </html>

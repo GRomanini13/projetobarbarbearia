@@ -4,8 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cadastro - Barbearia</title>
-    
+    <title>Cadastro - Barbearia (Barbeiro)</title>
+
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -82,6 +82,9 @@
             position: relative;
             z-index: 1;
             animation: fadeIn 0.8s ease-out;
+            /* Adicionado para permitir o scroll em telas pequenas por causa dos novos campos */
+            max-height: 95vh; 
+            overflow-y: auto;
         }
 
         @keyframes fadeIn {
@@ -141,12 +144,30 @@
             color: black;
         }
 
+        input[type="time"] {
+            /* Estilo específico para inputs de hora */
+            text-align: center;
+        }
+
         input:focus {
             border-color: var(--highlight);
             box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.1);
             outline: none;
         }
 
+        /* Agrupamento para campos de horário */
+        .time-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .time-group > div {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
         /* ESTILOS DE MENSAGENS */
         .error-message,
         .success-message {
@@ -237,6 +258,9 @@
                 padding: 20px;
                 margin: 20px;
             }
+            .time-group {
+                flex-direction: column;
+            }
         }
     </style>
 </head>
@@ -247,8 +271,8 @@
     <div class="login-container">
         <div class="logo">
             <img src="imagens/Imagem do WhatsApp de 2025-11-17 à(s) 19.55.45_787eb28d.jpg" alt="Logo Barbearia" onerror="this.style.display='none'">
-            <h1><i class="fas fa-user-plus"></i> Cadastro</h1>
-            <p>Crie sua conta</p>
+            <h1><i class="fas fa-user-plus"></i> Cadastro de Barbeiro</h1>
+            <p>Crie sua conta e defina seu horário de trabalho</p>
         </div>
 
         <form id="registerForm">
@@ -265,8 +289,34 @@
 
             <label for="password"><i class="fas fa-lock"></i> Senha</label>
             <input type="password" id="password" name="password" placeholder="Crie uma senha" required>
+            
+            <hr style="border: 1px solid var(--accent); margin: 15px 0;">
 
-            <button type="submit"><i class="fas fa-user-plus"></i> Cadastrar</button>
+            <label><i class="fas fa-clock"></i> Horário de Expediente</label>
+            <div class="time-group">
+                <div>
+                    <label for="inicio_expediente" style="font-size: 0.9em; font-weight: 400;">Início Expediente</label>
+                    <input type="time" id="inicio_expediente" name="inicio_expediente" required>
+                </div>
+                <div>
+                    <label for="fim_expediente" style="font-size: 0.9em; font-weight: 400;">Fim Expediente</label>
+                    <input type="time" id="fim_expediente" name="fim_expediente" required>
+                </div>
+            </div>
+
+            <label><i class="fas fa-utensils"></i> Horário de Almoço</label>
+            <div class="time-group">
+                <div>
+                    <label for="inicio_almoco" style="font-size: 0.9em; font-weight: 400;">Início Almoço</label>
+                    <input type="time" id="inicio_almoco" name="inicio_almoco" required>
+                </div>
+                <div>
+                    <label for="fim_almoco" style="font-size: 0.9em; font-weight: 400;">Fim Almoço</label>
+                    <input type="time" id="fim_almoco" name="fim_almoco" required>
+                </div>
+            </div>
+
+            <button type="submit"><i class="fas fa-user-plus"></i> Cadastrar Barbeiro</button>
 
             <div class="links">
                 <a href="main.html"><i class="fas fa-sign-in-alt"></i> Já tem conta? Entrar</a>
@@ -276,7 +326,6 @@
 
     <script>
         const form = document.getElementById("registerForm");
-        const message = document.getElementById("errorMessage");
 
         form.addEventListener("submit", async function(event) {
             event.preventDefault();
@@ -285,6 +334,14 @@
             let telefone = document.getElementById("telefone").value.trim(); 
             const email = document.getElementById("email").value.trim();
             const password = document.getElementById("password").value.trim();
+            
+            // Novos campos de horário
+            const inicio_expediente = document.getElementById("inicio_expediente").value;
+            const fim_expediente = document.getElementById("fim_expediente").value;
+            const inicio_almoco = document.getElementById("inicio_almoco").value;
+            const fim_almoco = document.getElementById("fim_almoco").value;
+
+            const message = document.getElementById("errorMessage");
 
             // Resetar mensagem
             message.innerHTML = "";
@@ -292,32 +349,42 @@
 
 
             // Validação simples
-            if (!name || !telefone || !email || !password) {
-                message.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Por favor, preencha todos os campos.`;
+            if (!name || !telefone || !email || !password || !inicio_expediente || !fim_expediente || !inicio_almoco || !fim_almoco) {
+                message.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Por favor, preencha todos os campos, incluindo os horários.`;
                 message.className = "error-message";
                 message.classList.add("show");
                 return;
             }
             
-            // 🔥 CORREÇÃO: Limpar o telefone (remove todos os caracteres não numéricos)
+            // Limpar o telefone (remove todos os caracteres não numéricos)
             telefone = telefone.replace(/\D/g, '');
 
 
             try {
+                // Monta o payload, adicionando os novos campos de horário
+                const payload = {
+                    nome: name,
+                    telefone: telefone, 
+                    email: email,
+                    senha: password,
+                    is_barbeiro: true, 
+                    // Adiciona os horários no formato HH:MM (que é o que o input type="time" retorna)
+                    // O backend pode estar esperando "HH:MM:SS.msZ", então pode ser necessário um ajuste no servidor
+                    // ou se o seu backend aceitar "HH:MM", o código a seguir funcionará.
+                    inicio_expediente: inicio_expediente + ":00", 
+                    fim_expediente: fim_expediente + ":00",
+                    inicio_almoco: inicio_almoco + ":00",
+                    fim_almoco: fim_almoco + ":00"
+                };
+
                 const response = await fetch("http://127.0.0.1:8000/usuarios/", {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        nome: name,
-                        telefone: telefone, // Envia telefone limpo
-                        email: email,
-                        senha: password,
-                        is_barbeiro: false // Campo padrão
-                    })
+                    body: JSON.stringify(payload)
                 });
 
                 if (response.ok) {
-                    message.innerHTML = `<i class="fas fa-check-circle"></i> Cadastro realizado com sucesso! Redirecionando...`;
+                    message.innerHTML = `<i class="fas fa-check-circle"></i> Cadastro de barbeiro realizado com sucesso! Redirecionando...`;
                     message.className = "success-message";
                     message.classList.add("show");
 
@@ -335,7 +402,7 @@
                             if (typeof errorData.detail === 'string') {
                                 errorText = errorData.detail;
                             } else if (Array.isArray(errorData.detail) && errorData.detail.length > 0) {
-                                // 🔥 Exibir o primeiro erro de validação (incluindo o nome do campo)
+                                // Exibir o primeiro erro de validação (incluindo o nome do campo)
                                 const firstError = errorData.detail[0];
                                 const location = firstError.loc[firstError.loc.length - 1] || 'campo desconhecido';
                                 errorText = `Erro de validação: ${firstError.msg} no campo '${location}'`;

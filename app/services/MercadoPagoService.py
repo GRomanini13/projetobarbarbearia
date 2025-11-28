@@ -1,25 +1,24 @@
 import os
 from dotenv import load_dotenv
 import requests
+import json
 
-# Carrega variáveis de ambiente
 load_dotenv()
 
 ACCESS_TOKEN = os.getenv("MERCADOPAGO_ACCESS_TOKEN")
-BASE_URL = os.getenv("BASE_URL")  # <-- agora o ngrok vem daqui!
+BASE_URL = os.getenv("BASE_URL") # Link do NGROK (Porta 8000)
+
+# AGORA TUDO VEM DO MESMO LUGAR (Python/Ngrok)
+# Importante: Adicionei '/site' pois configuramos o mount no main.py
+if BASE_URL:
+    URL_DO_FRONTEND = f"{BASE_URL}/site"
+else:
+    URL_DO_FRONTEND = "http://localhost:8000/site"
 
 if not ACCESS_TOKEN:
     raise ValueError("MERCADOPAGO_ACCESS_TOKEN não encontrado no .env!")
 
-if not BASE_URL:
-    raise ValueError("BASE_URL não encontrada no .env!")
-
-print("TOKEN EM USO:", ACCESS_TOKEN)  # apenas para debug
-
-# -----------------------------------------------------------
-# Criar preferência de pagamento
-# -----------------------------------------------------------
-def criar_preferencia(item_title, quantity, unit_price):
+def criar_preferencia(item_title, quantity, unit_price, payer_email="cliente@test.com", external_reference=""):
     url = "https://api.mercadopago.com/checkout/preferences"
 
     headers = {
@@ -36,52 +35,49 @@ def criar_preferencia(item_title, quantity, unit_price):
                 "currency_id": "BRL",
             }
         ],
-        "back_urls": {
-            "success": f"{BASE_URL}/success",
-            "failure": f"{BASE_URL}/failure",
-            "pending": f"{BASE_URL}/pending",
+        "payer": {
+            "email": payer_email
         },
-        "auto_return": "approved",
+        # Webhook: Vai para o Python (API)
+        "notification_url": f"{BASE_URL}/pagamentos/webhook" if BASE_URL else None,
+        
+        # Redirecionamento: Vai para o Python (Pasta Static)
+        "back_urls": {
+            "success": f"{URL_DO_FRONTEND}/sucesso.html",
+            "failure": f"{URL_DO_FRONTEND}/agendamento.html", 
+            "pending": f"{URL_DO_FRONTEND}/sucesso.html"
+        },
+        "external_reference": external_reference,
+        
+        # Agora podemos ativar o auto_return pois o BASE_URL é HTTPS (Ngrok)
+        "auto_return": "approved", 
     }
 
     try:
+        print(f"📤 Configuração: Webhook em {preference_data['notification_url']} | Retorno em {URL_DO_FRONTEND}")
         response = requests.post(url, json=preference_data, headers=headers)
-        print("Status code:", response.status_code)
-        print("Response body:", response.text)
+        
+        if response.status_code != 200 and response.status_code != 201:
+            print(f"⚠️ Erro MP ({response.status_code}):", response.text)
+
         response.raise_for_status()
         return response.json()
 
     except requests.exceptions.HTTPError as e:
-        print("Erro HTTP:", e)
-        return {"error": str(e), "details": response.text}
+        error_detail = response.text if 'response' in locals() else "Sem detalhes"
+        return {"error": f"Erro Mercado Pago ({response.status_code}): {error_detail}"}
 
     except requests.exceptions.RequestException as e:
         print("Erro Request:", e)
         return {"error": str(e)}
 
-
-# -----------------------------------------------------------
-# Consultar pagamento
-# -----------------------------------------------------------
 def consultar_pagamento(payment_id):
     url = f"https://api.mercadopago.com/v1/payments/{payment_id}"
-
-    headers = {
-        "Authorization": f"Bearer {ACCESS_TOKEN}",
-    }
-
+    headers = {"Authorization": f"Bearer {ACCESS_TOKEN}"}
     try:
         response = requests.get(url, headers=headers)
-        print("Consulta pagamento - status code:", response.status_code)
-        print("Consulta pagamento - body:", response.text)
-
         response.raise_for_status()
         return response.json()
-
-    except requests.exceptions.HTTPError as e:
-        print("Erro HTTP ao consultar pagamento:", e)
-        return {"error": str(e), "details": response.text}
-
-    except requests.exceptions.RequestException as e:
-        print("Erro Request ao consultar pagamento:", e)
-        return {"error": str(e)}
+    except Exception as e:
+        print("Erro ao consultar:", e)
+        return None

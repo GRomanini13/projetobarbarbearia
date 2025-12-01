@@ -1,6 +1,8 @@
+from sqlite3 import Date
 from fastapi import APIRouter, Depends, Query
+from sqlalchemy import func
 from sqlalchemy.orm import Session, aliased
-from datetime import date
+from datetime import date, datetime
 from app.schemas.AgendamentoSchema import AgendamentoCreate, AgendamentoResponse, DisponibilidadeResponse
 from app.services.AgendamentoService import criar_agendamento, obter_horarios_disponiveis
 from app.core.database import get_db
@@ -102,3 +104,62 @@ def listar_agendamentos_barbeiro(
     from app.services.AgendamentoService import listar_agendamentos_barbeiro
 
     return listar_agendamentos_barbeiro(db, barbeiro_id, data)
+
+
+
+@router.get("/cliente/agendamentos/")
+def listar_agendamentos_clientes(
+    cliente_id: int,
+    data: str,
+    db: Session = Depends(get_db)
+):
+    from datetime import datetime
+    from sqlalchemy import func
+    from sqlalchemy.orm import aliased
+
+    # Converte a data
+    try:
+        data_formatada = datetime.strptime(data, "%Y-%m-%d").date()
+    except:
+        raise HTTPException(status_code=400, detail="Data inválida. Use YYYY-MM-DD.")
+
+    Cliente = aliased(Usuario)
+    Barbeiro = aliased(Usuario)
+
+    resultados = (
+        db.query(
+            Agendamento.idagendamento.label("id"),
+            Cliente.nome.label("cliente"),
+            Servico.nome.label("servico"),
+            Servico.duracao.label("duracao"),
+            Agendamento.preco.label("preco"),
+            Agendamento.data_hora_inicio,
+            Agendamento.data_hora_fim,
+            Agendamento.observacao
+        )
+        .join(Cliente, Agendamento.cliente_id == Cliente.idusuario)
+        .join(Barbeiro, Agendamento.barbeiro_id == Barbeiro.idusuario)
+        .join(Servico, Agendamento.servico_id == Servico.idservicos)
+        .filter(
+            Agendamento.cliente_id == cliente_id,
+            func.date(Agendamento.data_hora_inicio) == data_formatada
+        )
+        .order_by(Agendamento.data_hora_inicio)
+        .all()
+    )
+
+    resposta = []
+    for r in resultados:
+        resposta.append({
+            "id": r.id,
+            "cliente": r.cliente,
+            "servico": r.servico,
+            "duracao": r.duracao,
+            "preco": float(r.preco),
+            "data_hora_inicio": r.data_hora_inicio,
+            "data_hora_fim": r.data_hora_fim,
+            "observacao": r.observacao
+        })
+
+    return resposta
+

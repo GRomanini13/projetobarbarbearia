@@ -47,6 +47,21 @@ def criar_usuario(db: Session, usuario: UsuarioCreate):
             detail="Telefone já cadastrado."
         )
 
+    #  REGRA DE NEGÓCIO IMPORTANTE 
+    if usuario.is_barbeiro:
+        if not usuario.inicio_expediente or not usuario.fim_expediente \
+           or not usuario.inicio_almoco or not usuario.fim_almoco:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Barbeiros devem preencher expediente e horário de almoço."
+            )
+    else:
+        # Se NÃO for barbeiro, ignorar horários e gravar como None
+        usuario.inicio_expediente = None
+        usuario.fim_expediente = None
+        usuario.inicio_almoco = None
+        usuario.fim_almoco = None
+
     # Hash da senha
     senha_bytes = usuario.senha.encode('utf-8')
     if len(senha_bytes) > 72:
@@ -55,7 +70,7 @@ def criar_usuario(db: Session, usuario: UsuarioCreate):
 
     novo_usuario = Usuario(
         nome=usuario.nome,
-        telefone=usuario.telefone, 
+        telefone=usuario.telefone,
         email=usuario.email,
         senha=hashed_password,
         is_barbeiro=usuario.is_barbeiro,

@@ -13,10 +13,10 @@ class Usuario(Base):
     is_barbeiro = Column(Boolean, default=False)
     
     # Horários de expediente
-    inicio_expediente = Column(Time, default="09:00")
-    fim_expediente = Column(Time, default="18:00")
-    inicio_almoco = Column(Time, default="12:00")
-    fim_almoco = Column(Time, default="13:00")
+    inicio_expediente = Column(Time, nullable=True)
+    fim_expediente = Column(Time, nullable=True)
+    inicio_almoco = Column(Time, nullable=True)
+    fim_almoco = Column(Time, nullable=True)
     
     # Relacionamento com agendamentos como CLIENTE 
     agendamentos_como_cliente = relationship(

@@ -9,7 +9,6 @@ ACCESS_TOKEN = os.getenv("MERCADOPAGO_ACCESS_TOKEN")
 BASE_URL = os.getenv("BASE_URL") # Link do NGROK (Porta 8000)
 
 # AGORA TUDO VEM DO MESMO LUGAR (Python/Ngrok)
-# Importante: Adicionei '/site' pois configuramos o mount no main.py
 if BASE_URL:
     URL_DO_FRONTEND = f"{BASE_URL}/site"
 else:
@@ -17,6 +16,7 @@ else:
 
 if not ACCESS_TOKEN:
     raise ValueError("MERCADOPAGO_ACCESS_TOKEN não encontrado no .env!")
+
 
 def criar_preferencia(item_title, quantity, unit_price, payer_email="cliente@test.com", external_reference=""):
     url = "https://api.mercadopago.com/checkout/preferences"
@@ -54,11 +54,11 @@ def criar_preferencia(item_title, quantity, unit_price, payer_email="cliente@tes
     }
 
     try:
-        print(f"📤 Configuração: Webhook em {preference_data['notification_url']} | Retorno em {URL_DO_FRONTEND}")
+        print(f"Configuração: Webhook em {preference_data['notification_url']} | Retorno em {URL_DO_FRONTEND}")
         response = requests.post(url, json=preference_data, headers=headers)
         
         if response.status_code != 200 and response.status_code != 201:
-            print(f"⚠️ Erro MP ({response.status_code}):", response.text)
+            print(f"Erro MP ({response.status_code}):", response.text)
 
         response.raise_for_status()
         return response.json()

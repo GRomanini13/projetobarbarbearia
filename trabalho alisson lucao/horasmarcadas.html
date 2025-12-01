@@ -239,7 +239,9 @@
         <h3 style="color: var(--accent); padding: 15px 25px; border-bottom: 2px solid var(--accent);">
             <i class="fas fa-cog"></i> Gerenciamento
         </h3>
-        
+
+        <a href="clientebar.html"><i class="fas fa-calendar-plus"></i> Novo Agendamento</a>
+
         <a onclick="router('agendamentos'); toggleSidebar();"><i class="fas fa-calendar-check"></i> Agendamentos</a>
         <a onclick="router('cadastrarBarbeiro'); toggleSidebar();"><i class="fas fa-user-plus"></i> Cadastrar Barbeiro</a>
         
@@ -470,8 +472,17 @@
             };
             try {
                 const res = await fetch("http://127.0.0.1:8000/usuarios/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) });
-                if (res.ok) { showFeedback("Sucesso!", "success"); router('agendamentos'); }
-                else { const err = await res.json(); showFeedback(`Erro: ${err.detail}`, "error"); }
+                
+                // --- ATUALIZADO: FEEDBACK E DELAY ---
+                if (res.ok) { 
+                    showFeedback('<i class="fas fa-check-circle"></i> Barbeiro cadastrado com sucesso!', "success");
+                    e.target.reset(); // Limpa formulário
+                    setTimeout(() => { router('agendamentos'); }, 1500); // Espera 1.5s
+                }
+                else { 
+                    const err = await res.json(); 
+                    showFeedback(`Erro: ${err.detail}`, "error"); 
+                }
             } catch (e) { showFeedback("Erro conexão", "error"); }
         }
 
@@ -484,7 +495,13 @@
             };
             try {
                 const res = await fetch("http://127.0.0.1:8000/servicos/", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) });
-                if (res.ok) { showFeedback("Sucesso!", "success"); router('agendamentos'); }
+                
+                // --- ATUALIZADO: FEEDBACK E DELAY ---
+                if (res.ok) { 
+                    showFeedback('<i class="fas fa-check-circle"></i> Serviço criado com sucesso!', "success");
+                    e.target.reset();
+                    setTimeout(() => { router('agendamentos'); }, 1500); 
+                }
                 else { showFeedback("Erro ao criar.", "error"); }
             } catch (e) { showFeedback("Erro conexão", "error"); }
         }
@@ -525,7 +542,12 @@
             };
             try {
                 const res = await fetch(`http://127.0.0.1:8000/servicos/${id}`, { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) });
-                if (res.ok) { showFeedback("Atualizado!", "success"); router('agendamentos'); }
+                
+                // --- ATUALIZADO: FEEDBACK E DELAY ---
+                if (res.ok) { 
+                    showFeedback('<i class="fas fa-check-circle"></i> Serviço atualizado com sucesso!', "success"); 
+                    setTimeout(() => { router('agendamentos'); }, 1500);
+                }
                 else { showFeedback("Erro atualização", "error"); }
             } catch (e) { showFeedback("Erro conexão", "error"); }
         }

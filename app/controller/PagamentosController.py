@@ -1,63 +1,40 @@
 from fastapi import APIRouter, HTTPException, Request, Depends
 from sqlalchemy.orm import Session
-import traceback
-import json
-import os 
+import traceback, json, os
 from app.services.MercadoPagoService import criar_preferencia, consultar_pagamento
 from app.schemas.PagamentosSchemas import PreferenciaRequest
-from app.core.database import get_db 
+from app.core.database import get_db
 
 try:
-    from app.models.AgendamentoModel import Agendamento
+    from app.models.Agendamento import Agendamento
 except ImportError:
-    try:
-        from app.models.Agendamento import Agendamento
-    except ImportError:
-        print(" ERRO CRÍTICO: Model 'Agendamento' não encontrado.")
+    print("ERRO CRÍTICO: Model 'Agendamento' não encontrado.")
 
 router = APIRouter(prefix="/pagamentos", tags=["Pagamentos"])
 
 
-# ROTA 1: CRIAR A PREFERÊNCIA
+# --- CRIAR PREFERÊNCIA ---
 @router.post("/criar_preferencia")
 async def criar_preferencia_route(request_data: PreferenciaRequest, db: Session = Depends(get_db)):
     print(f"\n--- INICIANDO CRIAÇÃO DE PAGAMENTO ---")
     print(f"Agendamento ID: {request_data.agendamento_id}")
 
-    # --- DIAGNÓSTICO DO NGROK (Para saber por que o webhook não chega) ---
     base_url = os.getenv("BASE_URL")
-    if not base_url:
-        print("ERRO GRAVE: A variável 'BASE_URL' não existe no .env!")
-        print("    -> O Webhook NÃO será enviado e o status não atualizará.")
-    elif "localhost" in base_url or "127.0.0.1" in base_url:
-        print(f" ERRO GRAVE: Sua BASE_URL é local ({base_url}).")
-        print("    -> O Mercado Pago NÃO consegue enviar notificações para localhost.")
-        print("    -> SOLUÇÃO: Use o link do Ngrok no arquivo .env (ex: BASE_URL=https://xxxx.ngrok-free.app)")
+    if not base_url or "localhost" in base_url:
+        print(f"[ERRO] BASE_URL inválida ({base_url}). Use o link do Ngrok.")
     else:
-        print(f"Configuração de Webhook parece correta.")
-        print(f"-> O Mercado Pago deve notificar em: {base_url}/pagamentos/webhook")
-    # ---------------------------------------------------------------------
+        print(f"[INFO] Webhook configurado corretamente: {base_url}/pagamentos/webhook")
 
     try:
         email = getattr(request_data, "payer_email", "cliente@email.com")
-        
-        # Tenta enviar com todos os dados
-        try:
-            pref = criar_preferencia(
-                item_title=request_data.item.title,
-                quantity=request_data.item.quantity,
-                unit_price=request_data.item.unit_price,
-                payer_email=email,
-                external_reference=str(request_data.agendamento_id) 
-            )
-        except TypeError:
-            print("Aviso: Usando versão antiga do Service (sem external_reference).")
-            pref = criar_preferencia(
-                item_title=request_data.item.title,
-                quantity=request_data.item.quantity,
-                unit_price=request_data.item.unit_price
-            )
-        
+        pref = criar_preferencia(
+            item_title=request_data.item.title,
+            quantity=request_data.item.quantity,
+            unit_price=request_data.item.unit_price,
+            payer_email=email,
+            external_reference=str(request_data.agendamento_id)
+        )
+
         if "error" in pref:
             raise HTTPException(status_code=400, detail=pref["error"])
 
@@ -66,19 +43,53 @@ async def criar_preferencia_route(request_data: PreferenciaRequest, db: Session 
             "init_point": pref.get("init_point"),
             "sandbox_init_point": pref.get("sandbox_init_point"),
         }
+
     except Exception as e:
-        print("Erro ao criar:", e)
+        print("[ERRO] Criar preferência:", e)
         raise HTTPException(status_code=500, detail=str(e))
 
 
-# ROTA 2: WEBHOOK - MODO ESPIÃO (DEBUG)
+# --- FUNÇÃO AUXILIAR PARA ATUALIZAR AGENDAMENTO ---
+def atualizar_agendamento(db: Session, external_reference: str, status_mp: str):
+    if not external_reference or external_reference == "null":
+        print("[AVISO] Pagamento sem referência externa.")
+        return
+
+    try:
+        agendamento_id = int(external_reference)
+        agendamento = db.query(Agendamento).filter(Agendamento.idagendamento == agendamento_id).first()
+        if not agendamento:
+            print(f"[AVISO] Agendamento {agendamento_id} não encontrado no banco.")
+            return
+
+        status_map = {
+            "approved": 2,  # Pago
+            "pending": 1,   # Pendente
+            "rejected": 3,  # Falha
+            "cancelled": 3,
+            "refunded": 3
+        }
+
+        novo_status = status_map.get(status_mp)
+        if novo_status is None:
+            print(f"[AVISO] Status MP '{status_mp}' não mapeado.")
+            return
+
+        if agendamento.status_id != novo_status:
+            agendamento.status_id = novo_status
+            db.commit()
+            print(f"[SUCESSO] Agendamento {agendamento_id} atualizado para status {novo_status}.")
+        else:
+            print(f"[INFO] Agendamento {agendamento_id} já estava no status correto ({novo_status}).")
+
+    except ValueError:
+        print(f"[ERRO] external_reference '{external_reference}' não é um número válido.")
+
+
+# --- WEBHOOK ---
 @router.post("/webhook")
 async def receber_notificacao_mp(request: Request, db: Session = Depends(get_db)):
-    """
-    Recebe notificação do Mercado Pago e imprime TUDO no terminal.
-    """
     try:
-        # 1. PEGAR OS DADOS BRUTOS (Para você ver o que está chegando)
         query_params = dict(request.query_params)
         try:
             body = await request.json()
@@ -86,75 +97,72 @@ async def receber_notificacao_mp(request: Request, db: Session = Depends(get_db)
             body = {}
 
         print("\n" + "="*50)
-        print("WEBHOOK CHEGOU! DADOS RECEBIDOS:")
-        print(f"Via URL (Query): {query_params}")
-        print(f"Via Corpo (JSON): {json.dumps(body, indent=2)}")
+        print("[WEBHOOK RECEBIDO]")
+        print(f"Query: {query_params}")
+        print(f"Body: {json.dumps(body, indent=2)}")
         print("="*50 + "\n")
 
-        # 2. DESCOBRIR O ID DO PAGAMENTO
-        # O MP pode mandar de dois jeitos: na URL (?id=123&topic=payment) ou no JSON ({data: {id: 123}})
-        op_id = query_params.get("id") or query_params.get("data.id")
-        topic = query_params.get("topic") or query_params.get("type")
-
-        if not op_id and body:
-            op_id = body.get("data", {}).get("id")
-            topic = body.get("type") or body.get("action")
+        op_id = query_params.get("id") or body.get("data", {}).get("id")
+        topic = query_params.get("topic") or body.get("type")
 
         if not op_id:
-            print("Webhook recebido sem ID de operação. Ignorando.")
+            print("[AVISO] Webhook sem ID. Ignorando.")
             return {"status": "ignored"}
 
-        # 3. CONSULTAR O STATUS REAL NA API DO MERCADO PAGO
-        if topic == "payment" or "payment" in str(topic):
-            print(f"Consultando Pagamento ID {op_id}...")
-            
+        # --- PAYMENT ---
+        if "payment" in str(topic):
+            print(f"[INFO] Consultando pagamento {op_id}...")
             pagamento = consultar_pagamento(op_id)
-            
             if not pagamento:
-                print("Erro ao consultar API do Mercado Pago.")
+                print("[ERRO] Consulta ao MP falhou.")
                 return {"status": "error"}
 
-            status = pagamento.get("status")
-            ref_agendamento = pagamento.get("external_reference") # AQUI ESTÁ O SEGREDO!
+            status_mp = pagamento.get("status")
+            ref = pagamento.get("external_reference")
+            atualizar_agendamento(db, ref, status_mp)
 
-            print(f"STATUS ATUAL: {status}")
-            print(f"REF AGENDAMENTO (ID): {ref_agendamento}")
+        # --- MERCHANT ORDER ---
+        elif "merchant_order" in str(topic):
+            print(f"[INFO] Webhook merchant_order recebido: {op_id}")
+            # Para cada pagamento, chamar atualizar_agendamento se necessário
+            print("Merchant order ainda não processado individualmente.")
 
-            # 4. ATUALIZAR O BANCO DE DADOS
-            if status == "approved":
-                if ref_agendamento and ref_agendamento != "null":
-                    try:
-                        id_busca = int(ref_agendamento)
-                        agendamento = db.query(Agendamento).filter(Agendamento.idagendamento == id_busca).first()
-                        
-                        if agendamento:
-                            print(f"Encontrei o agendamento {id_busca}! Status atual: {agendamento.status_id}")
-                            
-                            # MUDANDO STATUS PARA 'PAGO' (Ex: 2)
-                            agendamento.status_id = 2 
-                            db.commit()
-                            
-                            print(f"SUCESSO: Agendamento {id_busca} atualizado para PAGO no banco!")
-                        else:
-                            print(f"Agendamento ID {id_busca} não existe no banco.")
-                    except ValueError:
-                        print(f" A referência '{ref_agendamento}' não é um número válido.")
-                else:
-                    print("Pagamento aprovado, mas sem ID de agendamento vinculado.")
-            else:
-                print("Pagamento ainda não foi aprovado.")
+        else:
+            print(f"[INFO] Notificação ignorada, topic='{topic}' não é payment nem merchant_order.")
 
         return {"status": "ok"}
 
     except Exception as e:
-        print("ERRO NO WEBHOOK:", e)
+        print("[ERRO WEBHOOK]:", e)
         traceback.print_exc()
         return {"status": "error", "message": str(e)}
 
-# Rotas auxiliares para o front-end
+
+# --- ROTAS AUXILIARES ---
 @router.get("/success")
 def s(): return {"msg": "Sucesso"}
+
 @router.get("/failure")
 def f(): return {"msg": "Falha"}
+
 @router.get("/pending")
 def p(): return {"msg": "Pendente"}
+
+
+@router.get("/status/{agendamento_id}")
+def consultar_status_pagamento(agendamento_id: int, db: Session = Depends(get_db)):
+    agendamento = db.query(Agendamento).filter(Agendamento.idagendamento == agendamento_id).first()
+    if not agendamento:
+        raise HTTPException(status_code=404, detail="Agendamento não encontrado")
+    
+    status_map = {
+        1: "pendente",
+        2: "pago",
+        3: "falha"
+    }
+
+    return {
+        "agendamento_id": agendamento.idagendamento,
+        "status_id": agendamento.status_id,
+        "status": status_map.get(agendamento.status_id, "desconhecido")
+    }

@@ -130,6 +130,7 @@ def listar_agendamentos_clientes(
         db.query(
             Agendamento.idagendamento.label("id"),
             Cliente.nome.label("cliente"),
+            Barbeiro.nome.label("barbeiro"),
             Servico.nome.label("servico"),
             Servico.duracao.label("duracao"),
             Agendamento.preco.label("preco"),
@@ -153,6 +154,7 @@ def listar_agendamentos_clientes(
         resposta.append({
             "id": r.id,
             "cliente": r.cliente,
+            "barbeiro": r.barbeiro,
             "servico": r.servico,
             "duracao": r.duracao,
             "preco": float(r.preco),

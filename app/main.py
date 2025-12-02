@@ -51,7 +51,7 @@ app.add_middleware(SignatureMiddleware)
 # Debug Middleware
 @app.middleware("http")
 async def debug_middleware(request: Request, call_next):
-    print(f">>> DEBUG: {request.method} {request.url.path}")
+    # print(f">>> DEBUG: {request.method} {request.url.path}") # Pode comentar se poluir muito
     response = await call_next(request)
     return response
 
@@ -69,7 +69,7 @@ for table in Base.metadata.tables.keys():
 app.include_router(usuario_router)
 app.include_router(servico_router)
 app.include_router(agendamento_router)
-app.include_router(pagamentos_router)
+app.include_router(pagamentos_router) # A rota de status correta está AQUI dentro agora
 app.include_router(mp_router)
 app.include_router(webhook_router)
 

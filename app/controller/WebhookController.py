@@ -42,3 +42,8 @@ async def receber_webhook(request: Request):
         print(f"ERRO CRÍTICO ao processar webhook: {e}")
         # Aumentar a chance de reenvio
         raise HTTPException(status_code=500, detail=f"Erro interno: {str(e)}")
+    
+
+@router.get("/mp")
+async def testar():
+    return {"status": "ok - GET funcionando"}

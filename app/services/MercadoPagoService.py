@@ -39,7 +39,7 @@ def criar_preferencia(item_title, quantity, unit_price, payer_email="cliente@tes
             "email": payer_email
         },
         # Webhook: Vai para o Python (API)
-        "notification_url": f"{BASE_URL}/pagamentos/webhook" if BASE_URL else None,
+        "notification_url": f"{BASE_URL}/webhooks/mp" if BASE_URL else None,
         
         # Redirecionamento: Vai para o Python (Pasta Static)
         "back_urls": {

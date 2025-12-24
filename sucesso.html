@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pagamento Aprovado - Barbearia</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --success-color: #28a745;
+            --primary: #333333;
+            --secondary: #f0f0f0;
+            --accent: #A18522;
+            --light: #ffffff;
+            --shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, var(--light) 0%, #f9f9f9 100%);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        /* Fundo animado suave */
+        body::before {
+            content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+            background: radial-gradient(circle, rgba(40, 167, 69, 0.05) 0%, transparent 70%);
+            animation: rotate 20s linear infinite; pointer-events: none; z-index: -1;
+        }
+        @keyframes rotate { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .card {
+            background: var(--light);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+            border: 2px solid var(--success-color);
+            position: relative;
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes popIn {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .icon-container {
+            width: 80px;
+            height: 80px;
+            background: rgba(40, 167, 69, 0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px auto;
+        }
+
+        .icon-container i {
+            color: var(--success-color);
+            font-size: 40px;
+        }
+
+        h1 {
+            color: var(--success-color);
+            margin: 0 0 10px 0;
+            font-size: 1.8em;
+        }
+
+        p {
+            color: #666;
+            margin-bottom: 30px;
+            line-height: 1.5;
+        }
+
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            background: var(--primary);
+            color: var(--light);
+            text-decoration: none;
+            border-radius: 12px;
+            font-weight: 600;
+            transition: transform 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            background: var(--accent);
+        }
+
+        .info-box {
+            background: var(--secondary);
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            font-size: 0.9em;
+            text-align: left;
+        }
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+        .info-row:last-child { margin-bottom: 0; }
+        .info-label { font-weight: 600; color: var(--primary); }
+        .info-val { color: #555; }
+
+    </style>
+</head>
+<body>
+
+    <div class="card">
+        <div class="icon-container">
+            <i class="fas fa-check"></i>
+        </div>
+        <h1>Pagamento Aprovado!</h1>
+        <p>Seu horário foi agendado com sucesso. Estamos esperando por você na barbearia.</p>
+
+        <div class="info-box" id="infoBox" style="display:none;">
+            <div class="info-row">
+                <span class="info-label">ID do Pagamento:</span>
+                <span class="info-val" id="payId">--</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Status:</span>
+                <span class="info-val" id="payStatus">Aprovado</span>
+            </div>
+        </div>
+
+        <a href="agendamento.html" class="btn">Voltar ao Início</a>
+    </div>
+
+    <script>
+        // Pega parâmetros da URL que o Mercado Pago envia (ex: ?payment_id=123&status=approved)
+        const params = new URLSearchParams(window.location.search);
+        const paymentId = params.get('payment_id');
+        const status = params.get('status');
+
+        if (paymentId) {
+            document.getElementById('infoBox').style.display = 'block';
+            document.getElementById('payId').innerText = paymentId;
+            document.getElementById('payStatus').innerText = status === 'approved' ? 'Aprovado' : status;
+        }
+    </script>
+</body>
+</html>

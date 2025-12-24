@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Área do Cliente - Barbearia</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- ESTILOS GERAIS --- */
+        :root {
+            --primary: #333333;
+            --secondary: #EFECE7;
+            --accent: #B08D28;
+            --highlight: #D4AF37;
+            --light: #ffffff;
+            --price-green: #28a745;
+            --danger: #e94560;
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            --border-radius: 20px;
+            --transition: all 0.3s ease;
+            --submenu-bg: #e5e5e5;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+
+        body {
+            background: linear-gradient(135deg, var(--light) 0%, #f9f9f9 100%);
+            display: block; padding-top: 80px; min-height: 100vh; position: relative; overflow-x: hidden;
+        }
+
+        /* Fundo Animado */
+        body::before {
+            content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%;
+            background: radial-gradient(circle, rgba(161, 133, 34, 0.05) 0%, transparent 70%);
+            animation: rotate 20s linear infinite; z-index: -2;
+        }
+        @keyframes rotate { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        .background-image {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: url('imagens/Imagem do WhatsApp de 2025-11-17 à(s) 19.55.45_787eb28d.jpg') no-repeat center center;
+            background-size: cover; opacity: 0.1; z-index: -1;
+        }
+
+        /* HEADER */
+        .header-bar {
+            position: fixed; top: 0; left: 0; width: 100%; background: var(--light);
+            border-bottom: 2px solid var(--accent); padding: 15px 40px; display: flex;
+            justify-content: space-between; align-items: center; color: var(--primary);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); z-index: 50;
+        }
+
+        .menu-toggle { font-size: 1.8em; color: var(--accent); cursor: pointer; margin-right: 20px; transition: var(--transition); }
+        .logo-text { color: var(--accent); font-size: 1.5em; font-weight: 700; cursor: pointer; }
+
+        /* SIDEBAR */
+        .sidebar-menu {
+            height: 100%; width: 300px; position: fixed; z-index: 100; top: 0; left: -300px;
+            background-color: var(--light); overflow-y: auto; padding-top: 20px;
+            transition: left 0.3s ease; box-shadow: var(--shadow); border-right: 2px solid var(--accent);
+        }
+        .sidebar-menu.open { left: 0; }
+        .sidebar-logo-area { text-align: center; padding: 15px 0 25px 0; border-bottom: 2px solid var(--accent); margin-bottom: 20px; }
+        .sidebar-logo-area img { max-width: 120px; border-radius: 10px; }
+
+        .sidebar-menu a, .menu-item {
+            padding: 15px 25px; text-decoration: none; font-size: 1.1em; color: var(--primary);
+            display: block; transition: var(--transition); border-bottom: 1px solid #eee;
+            font-weight: 500; cursor: pointer;
+        }
+        .sidebar-menu a:hover, .menu-item:hover { color: var(--light); background-color: var(--accent); }
+        .sidebar-menu a i, .menu-item i { margin-right: 10px; color: var(--accent); }
+        .sidebar-menu a:hover i, .menu-item:hover i { color: var(--light); }
+
+        .overlay {
+            position: fixed; display: none; width: 100%; height: 100%; top: 0; left: 0;
+            background-color: rgba(0, 0, 0, 0.4); z-index: 90; transition: opacity 0.3s ease; opacity: 0;
+        }
+        .overlay.active { display: block; opacity: 1; }
+
+        /* --- CONTAINER PRINCIPAL --- */
+        .appointments-view-container {
+            background: var(--light); 
+            border: 2px solid var(--accent);
+            border-radius: 20px;
+            padding: 30px; 
+            max-width: 800px;
+            margin: 30px auto; 
+            color: var(--primary);
+            box-shadow: var(--shadow); 
+            margin-top: 100px; 
+            min-height: 400px;
+            position: relative;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .appointments-view-container h1 {
+            color: var(--accent); font-size: 1.8em; margin-bottom: 25px; text-align: center;
+            font-weight: 700; border-bottom: 2px solid var(--highlight); padding-bottom: 10px;
+            width: fit-content; margin-left: auto; margin-right: auto;
+        }
+
+        .appointments-view-container p.subtitle {
+            text-align: center; color: var(--primary); font-size: 0.9em; margin-top: -20px; margin-bottom: 25px;
+        }
+
+        /* Agendamentos */
+        .appointment-item {
+            background: var(--secondary); border-radius: 20px; padding: 20px 25px;
+            margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;
+            border-left: 6px solid #CFA72D; box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        .details-group { display: flex; flex-direction: column; gap: 5px; }
+        .client-name { font-weight: 700; color: #967518; font-size: 1.1em; margin-bottom: 5px; }
+        .details { font-size: 0.95em; color: #555; display: flex; align-items: center; }
+        .details i { color: #CFA72D; margin-right: 10px; width: 15px; text-align: center; }
+        .price-tag { font-size: 1.3em; font-weight: 700; color: var(--price-green); margin-left: 20px; }
+
+        .date-filter-group { display: flex; align-items: center; gap: 10px; margin-left: auto; }
+        .date-filter-group.hidden { display: none; }
+        .date-filter-group input { padding: 8px 12px; border: 1px solid var(--accent); border-radius: 8px; color: #555;}
+        
+        .logout-button { background: none; border: none; color: var(--accent); font-weight: 600; cursor: pointer; margin-left: 20px; font-size: 1em; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+
+        @media (max-width: 900px) {
+            .header-bar { padding: 10px 15px; }
+            .date-filter-group { position: fixed; top: 65px; right: 15px; background: white; padding: 5px; border-radius: 5px; border: 1px solid #ccc; z-index: 40;}
+            .appointments-view-container { margin-top: 120px; width: 95%; padding: 20px; }
+            .appointment-item { flex-direction: column; align-items: flex-start; }
+            .price-tag { align-self: flex-end; margin-top: 10px; }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="background-image"></div>
+    <div id="overlay" class="overlay" onclick="toggleSidebar()"></div> 
+
+    <nav class="sidebar-menu" id="sidebarMenu">
+        <div class="sidebar-logo-area">
+            <img src="imagens/Imagem do WhatsApp de 2025-11-17 à(s) 19.55.45_787eb28d.jpg" alt="Logo" onerror="this.src='https://via.placeholder.com/120?text=Logo'"> 
+        </div>
+        
+        <h3 style="color: var(--accent); padding: 15px 25px; border-bottom: 2px solid var(--accent);">
+            <i class="fas fa-user-circle"></i> Minha Área
+        </h3>
+
+        <a href="cliente.html"><i class="fas fa-calendar-plus"></i> Novo Agendamento</a>
+        <a onclick="router('agendamentos'); toggleSidebar();"><i class="fas fa-calendar-check"></i> Meus Agendamentos</a>
+    </nav>
+
+    <div class="header-bar">
+        <div class="menu-left" style="display: flex; align-items: center;">
+            <i class="fas fa-bars menu-toggle" onclick="toggleSidebar()"></i>
+            <span class="logo-text" onclick="router('agendamentos')"><i class="fas fa-cut"></i> Barbearia</span>
+        </div>
+
+        <div class="date-filter-group" id="headerDateFilter">
+            <label for="appointmentDate"><i class="fas fa-search" style="color: var(--accent);"></i></label>
+            <input type="date" id="appointmentDate">
+            <button style="background:none; border:none; cursor:pointer; color:var(--accent); font-size:1.2em;" onclick="fetchAppointments()"><i class="fas fa-sync-alt"></i></button>
+        </div>
+
+        <button class="logout-button" onclick="logout()">
+            <i class="fas fa-sign-out-alt"></i> Sair
+        </button>
+    </div>
+
+    <div class="appointments-view-container">
+        <h1 id="pageTitle">Meus Agendamentos</h1>
+        <p id="pageSubtitle" class="subtitle"></p>
+        <div id="dynamicContent"></div>
+    </div>
+
+    <script>
+        const headerDateFilter = document.getElementById('headerDateFilter');
+        const pageTitle = document.getElementById('pageTitle');
+        const pageSubtitle = document.getElementById('pageSubtitle');
+
+        function getTodayDateString() {
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+        document.getElementById('appointmentDate').value = getTodayDateString();
+
+        // --- ROTEADOR SIMPLIFICADO ---
+        function router(rota) {
+            const contentDiv = document.getElementById('dynamicContent');
+            const usuario = JSON.parse(localStorage.getItem("usuarioLogado"));
+            
+            contentDiv.innerHTML = ''; 
+            
+            if (rota === 'agendamentos') {
+                pageTitle.innerHTML = `<i class="fas fa-calendar-alt"></i> Meus Agendamentos`;
+                pageSubtitle.textContent = `Olá, ${usuario ? usuario.nome : 'Cliente'}. Veja seus horários.`;
+                contentDiv.innerHTML = '<div id="appointmentsList" class="appointment-list"><p style="text-align:center">Carregando...</p></div>';
+                fetchAppointments();
+            }
+        }
+
+        // --- BUSCAR AGENDAMENTOS DO CLIENTE ---
+        async function fetchAppointments() {
+            const usuario = JSON.parse(localStorage.getItem("usuarioLogado"));
+            if (!usuario) { alert("Login necessário"); window.location.href = "main.html"; return; }
+            
+            const lista = document.getElementById("appointmentsList");
+            const dateInput = document.getElementById("appointmentDate").value; 
+            if(!lista) return;
+
+            try {
+                // Endpoint para buscar agendamentos
+                const url = `http://127.0.0.1:8000/agendamento/cliente/agendamentos/?cliente_id=${usuario.idusuario}&data=${dateInput}`;
+                
+                const res = await fetch(url);
+                
+                if (!res.ok) {
+                    throw new Error("Erro ao buscar agendamentos");
+                }
+
+                const data = await res.json();
+                lista.innerHTML = "";
+                
+                if(!Array.isArray(data) || !data.length) {
+                    const [ano, mes, dia] = dateInput.split('-');
+                    return lista.innerHTML = `<p style="text-align:center; padding:20px; color:#999;">Nenhum agendamento encontrado para ${dia}/${mes}/${ano}.</p>`;
+                }
+                
+                data.forEach(a => {
+                    const dataObj = new Date(a.data_hora_inicio);
+                    const dataFmt = dataObj.toLocaleDateString('pt-BR');
+                    const horaIni = dataObj.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
+                    
+                    let horaFim = '--:--';
+                    if(a.data_hora_fim) {
+                         const dataFimObj = new Date(a.data_hora_fim);
+                         horaFim = dataFimObj.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
+                    }
+
+                    const preco = parseFloat(a.preco||0).toFixed(2).replace('.', ',');
+                    
+                    // Lógica para pegar o nome do barbeiro e serviço (caso venha como objeto ou string)
+                    const nomeServico = a.servico?.nome || a.servico || 'Corte';
+                    const nomeBarbeiro = a.barbeiro?.nome || a.barbeiro || 'Não informado';
+
+                    const item = document.createElement("div");
+                    item.className = "appointment-item";
+                    
+                    // --- AQUI FOI ADICIONADO O CAMPO BARBEIRO ---
+                    item.innerHTML = `
+                        <div class="details-group">
+                            <div class="client-name"><i class="fas fa-cut"></i> Serviço: ${nomeServico}</div>
+                            <div class="details"><i class="fas fa-user-tie"></i> Barbeiro: ${nomeBarbeiro}</div>
+                            <div class="details"><i class="fas fa-calendar-alt"></i> Data: ${dataFmt}</div>
+                            <div class="details"><i class="fas fa-clock"></i> Horário: ${horaIni} - ${horaFim}</div>
+                            <div class="details"><i class="fas fa-info-circle"></i> Obs: ${a.observacao || '-'}</div>
+                        </div>
+                        <div class="price-tag">R$ ${preco}</div>
+                    `;
+                    lista.appendChild(item);
+                });
+            } catch (e) { 
+                console.error(e);
+                lista.innerHTML = "<p style='color:red; text-align:center'>Não foi possível carregar os agendamentos.</p>"; 
+            }
+        }
+
+        function toggleSidebar() { document.getElementById('sidebarMenu').classList.toggle('open'); document.getElementById('overlay').classList.toggle('active'); }
+        function logout() { localStorage.removeItem("usuarioLogado"); window.location.href="main.html"; }
+        
+        document.getElementById('appointmentDate').addEventListener('change', fetchAppointments);
+
+        router('agendamentos');
+    </script>
+</body>
+</html>

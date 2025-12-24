@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Definir Nova Senha</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <style>
+        :root {
+            --primary: #333333;
+            /* Cinza escuro para texto */
+            --secondary: #f0f0f0;
+            /* Cinza claro */
+            --accent: #A18522;
+            /* Dourado */
+            --highlight: #D4AF37;
+            /* Dourado brilhante */
+            --light: #ffffff;
+            /* Branco */
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            --border-radius: 20px;
+            --transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, var(--light) 0%, #f9f9f9 100%);
+            margin: 0;
+            padding: 0;
+            color: var(--primary);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(161, 133, 34, 0.1) 0%, transparent 70%);
+            animation: rotate 20s linear infinite;
+        }
+
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .background-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('imagens/Imagem do WhatsApp de 2025-11-17 à(s) 19.55.45_787eb28d.jpg') no-repeat center center;
+            background-size: cover;
+            opacity: 0.1;
+            z-index: -1;
+        }
+
+        /* CONTAINER PRINCIPAL (Mesmo estilo de agendamento) */
+        .login-container {
+            background: var(--light);
+            border: 2px solid var(--accent);
+            border-radius: var(--border-radius);
+            padding: 50px;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: var(--shadow);
+            text-align: center;
+            position: relative;
+            z-index: 1;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .logo img {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            border: 4px solid var(--accent);
+            margin-bottom: 15px;
+            box-shadow: var(--shadow);
+            display: inline-block;
+        }
+
+        .descsenha {
+            color: var(--accent);
+            font-size: 2em;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .subtitle {
+            color: var(--primary);
+            font-size: 1em;
+            font-weight: 400;
+            margin-bottom: 30px;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            margin-bottom: 10px;
+            color: var(--accent);
+            font-weight: 600;
+            font-size: 1.1em;
+            text-align: left;
+        }
+
+        input {
+            padding: 18px 20px;
+            border: 2px solid var(--accent);
+            border-radius: var(--border-radius);
+            font-size: 1.1em;
+            background: var(--light);
+            transition: var(--transition);
+            box-sizing: border-box;
+            font-family: inherit;
+            margin-bottom: 20px;
+            color: black;
+        }
+
+        input:focus {
+            border-color: var(--highlight);
+            box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.1);
+            outline: none;
+        }
+
+        /* ESTILOS DE MENSAGENS (Corrigido para exibir display: flex) */
+        .error-message,
+        .info-message {
+            padding: 15px;
+            border-radius: var(--border-radius);
+            margin-bottom: 20px;
+            font-weight: 600;
+            gap: 10px;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            display: none; /* Inicialmente oculto */
+        }
+
+        .error-message {
+            background: linear-gradient(135deg, #e94560, #ff6b6b);
+            color: var(--light);
+        }
+
+        .info-message {
+            background: linear-gradient(135deg, #28a745, #20c997); /* Cor de sucesso */
+            color: var(--light);
+        }
+
+        /* CLASSE SHOW (Garante que a mensagem seja exibida) */
+        .error-message.show,
+        .info-message.show {
+            display: flex;
+        }
+        /* FIM ESTILOS DE MENSAGENS */
+
+
+        button {
+            padding: 18px 30px;
+            border: 2px solid var(--accent);
+            border-radius: var(--border-radius);
+            background: var(--accent); /* Botão de ação principal em destaque */
+            color: var(--light);
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: var(--shadow);
+            position: relative;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+
+        button:hover {
+            background: var(--highlight);
+            border-color: var(--highlight);
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .links {
+            display: flex;
+            justify-content: center;
+            font-size: 0.9em;
+        }
+
+        .links a {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+
+        .links a:hover {
+            color: var(--highlight);
+            text-decoration: underline;
+        }
+
+        /* Responsividade */
+        @media (max-width: 768px) {
+            .login-container {
+                padding: 30px 20px;
+                margin: 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="background-image"></div>
+
+    <div class="login-container">
+        <div class="logo">
+            <img src="imagens/Imagem do WhatsApp de 2025-11-17 à(s) 19.55.45_787eb28d.jpg" alt="Logo Barbearia" onerror="this.style.display='none'">
+            <h1 class="descsenha"><i class="fas fa-key"></i> Definir Nova Senha</h1>
+            <p class="subtitle">Insira sua nova senha para continuar</p>
+        </div>
+
+        <form id="newPasswordForm">
+            <label for="password"><i class="fas fa-lock"></i> Nova Senha</label>
+            <input type="password" id="password" name="password" placeholder="Digite sua nova senha" required>
+
+            <div id="message" class="info-message"></div>
+
+            <button type="submit" class="butao"><i class="fas fa-save"></i> Salvar Nova Senha</button>
+
+            <div class="links">
+                <a href="redefinirsenha.html"><i class="fas fa-arrow-left"></i> Voltar</a>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        const form = document.getElementById('newPasswordForm');
+        const msg = document.getElementById('message');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            msg.classList.remove("show"); // Esconde qualquer mensagem anterior
+            msg.innerHTML = '';
+
+            const password = document.getElementById('password').value.trim();
+
+            // 1. Recupera o email salvo
+            const email = localStorage.getItem("emailRedefinir");
+
+            if (!email) {
+                msg.innerHTML = `<i class="fas fa-exclamation-triangle"></i> Erro: e-mail de redefinição não encontrado!`;
+                msg.className = "error-message";
+                msg.classList.add("show");
+                return;
+            }
+
+            // 2. Validação básica de senha
+            if (password.length < 6) {
+                msg.innerHTML = `<i class="fas fa-times-circle"></i> A senha deve ter pelo menos 6 caracteres.`;
+                msg.className = "error-message";
+                msg.classList.add("show");
+                return;
+            }
+
+            try {
+                // 3. Chamar a rota PUT para trocar a senha
+                const response = await fetch("http://127.0.0.1:8000/usuarios/reset-senha", {
+                    method: "PUT",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ email, nova_senha: password })
+                });
+
+                if (response.ok) {
+                    msg.innerHTML = `<i class="fas fa-check-circle"></i> Senha alterada com sucesso! Redirecionando...`;
+                    msg.className = "info-message"; // Usa info-message para sucesso
+                    msg.classList.add("show");
+
+                    // 4. Limpa o email e redireciona
+                    localStorage.removeItem("emailRedefinir");
+
+                    setTimeout(() => {
+                        window.location.href = "main.html"; // Ajuste para a sua tela principal de login ou dashboard
+                    }, 1500);
+
+                } else {
+                    // Tenta ler a mensagem de erro do backend
+                    let errorText = "Erro ao alterar senha. Tente novamente.";
+                    try {
+                        const errorData = await response.json();
+                        if (errorData.detail) {
+                            if (typeof errorData.detail === 'string') {
+                                errorText = errorData.detail;
+                            } else if (Array.isArray(errorData.detail) && errorData.detail.length > 0) {
+                                errorText = `Erro de validação: ${errorData.detail[0].msg}`;
+                            } else {
+                                errorText = "Erro desconhecido de validação.";
+                            }
+                        } else {
+                            errorText = `Erro ${response.status}: Falha na API.`;
+                        }
+                    } catch (e) {
+                        errorText = `Erro ${response.status}: Falha na comunicação.`;
+                    }
+                    
+                    msg.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${errorText}`;
+                    msg.className = "error-message";
+                    msg.classList.add("show");
+                }
+
+            } catch (error) {
+                msg.innerHTML = `<i class="fas fa-bomb"></i> Erro de conexão com o servidor. Verifique se o backend está ativo.`;
+                msg.className = "error-message";
+                msg.classList.add("show");
+            }
+        });
+    </script>
+
+</body>
+
+</html>

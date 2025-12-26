@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Confirmação de Pagamento - Barbearia</title>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <!-- SDK do Mercado Pago (Opcional se usarmos link direto, mas bom manter) -->
+    <script src="https://sdk.mercadopago.com/js/v2"></script>
+    
+    <style>
+        /* --- ESTILOS VISUAIS (Mantidos) --- */
+        :root {
+            --primary: #333333; --secondary: #f0f0f0; --accent: #A18522;
+            --highlight: #D4AF37; --light: #ffffff; --shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            --border-radius: 20px; --transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            --success-color: #28a745;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Inter', sans-serif; background: linear-gradient(135deg, var(--light) 0%, #f9f9f9 100%); min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; overflow-x: hidden; }
+        .background-image { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: url('imagens/Imagem do WhatsApp de 2025-11-17 à(s) 19.55.45_787eb28d.jpg') no-repeat center center; background-size: cover; opacity: 0.1; z-index: -1; }
+        
+        .container { background: var(--light); border: 2px solid var(--accent); border-radius: var(--border-radius); padding: 40px 50px; max-width: 650px; width: 90%; box-shadow: var(--shadow); position: relative; z-index: 1; text-align: center; margin: 50px 0; }
+        .container h1 { color: var(--accent); font-size: 2em; margin-bottom: 30px; font-weight: 700; border-bottom: 3px solid var(--highlight); padding-bottom: 15px; }
+        
+        /* Detalhes */
+        #appointmentDetails { text-align: left; margin-bottom: 30px; }
+        .detail-item { display: flex; justify-content: space-between; align-items: center; padding: 15px 0; border-bottom: 1px dashed var(--secondary); font-size: 1.1em; font-weight: 500; }
+        .detail-item:last-of-type { border-bottom: none; }
+        .detail-label { color: var(--accent); font-weight: 600; }
+        .detail-value { color: var(--primary); font-weight: 700; text-align: right; }
+        #totalValue { font-size: 1.6em; color: var(--success-color); font-weight: 900; }
+
+        /* Pagamento */
+        .payment-section h2 { color: var(--primary); font-size: 1.4em; margin: 30px 0 20px 0; border-bottom: 1px solid var(--secondary); padding-bottom: 10px; text-align: left; }
+        .payment-options { display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; }
+        .payment-option { flex: 1; max-width: 180px; padding: 20px; border: 2px solid var(--accent); border-radius: var(--border-radius); cursor: pointer; transition: var(--transition); background: var(--secondary); font-weight: 600; min-width: 150px; }
+        .payment-option:hover { transform: translateY(-5px); box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1); }
+        .payment-option.selected { border-color: var(--success-color); background: rgba(40, 167, 69, 0.1); box-shadow: 0 0 0 4px rgba(40, 167, 69, 0.3); }
+        .payment-option i { font-size: 2em; color: var(--accent); display: block; margin-bottom: 10px; }
+        .payment-option.selected i { color: var(--success-color); }
+
+        /* Botões */
+        .action-buttons { display: flex; justify-content: space-between; margin-top: 40px; gap: 20px; }
+        .action-buttons button { flex: 1; padding: 15px 30px; border: 2px solid var(--accent); border-radius: var(--border-radius); font-size: 1.1em; font-weight: 600; cursor: pointer; transition: var(--transition); }
+        
+        /* Área de Ação de Pagamento */
+        #paymentActionArea { flex: 1; display: flex; justify-content: center; }
+
+        #btnPagarOnline { background: #009EE3; color: white; border: none; display: none; }
+        #btnPagarOnline:hover { background: #007bb3; transform: translateY(-2px); }
+
+        #presencialConfirmButton { background: var(--accent); color: var(--light); border-color: var(--accent); display: none; }
+        #presencialConfirmButton:hover { background: var(--highlight); border-color: var(--highlight); transform: translateY(-2px); }
+        
+        #backButton { background: var(--light); color: var(--accent); }
+        #backButton:hover { background: var(--secondary); transform: translateY(-2px); }
+        
+        .error-message { color: #e94560; font-weight: 600; margin-top: 15px; text-align: center; }
+
+        /* Loader */
+        .loader { border: 4px solid #f3f3f3; border-top: 4px solid var(--accent); border-radius: 50%; width: 25px; height: 25px; animation: spin 1s linear infinite; display: inline-block; vertical-align: middle; margin-right: 10px;}
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* --- MODAL DE SUCESSO --- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.6); z-index: 2000;
+            display: none; align-items: center; justify-content: center;
+            backdrop-filter: blur(8px); opacity: 0; transition: opacity 0.4s ease;
+        }
+        .modal-overlay.active { display: flex; opacity: 1; }
+        .modal-card {
+            background: var(--light); padding: 40px 30px; border-radius: 25px;
+            text-align: center; max-width: 380px; width: 90%;
+            border: 2px solid var(--success-color);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+            transform: scale(0.8); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .modal-overlay.active .modal-card { transform: scale(1); }
+        .modal-icon-wrapper {
+            width: 90px; height: 90px; background: rgba(40, 167, 69, 0.1);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 25px auto;
+            position: relative;
+        }
+        .modal-icon-wrapper i { font-size: 45px; color: var(--success-color); }
+        .modal-card h2 { color: var(--primary); font-size: 1.6em; margin-bottom: 10px; font-weight: 700; }
+        .modal-card p { color: #666; margin-bottom: 5px; font-size: 1em; line-height: 1.5; }
+        .modal-card button {
+            width: 100%; padding: 15px; border: none; border-radius: 15px;
+            background: var(--success-color); color: white; font-size: 1.1em; font-weight: 600;
+            cursor: pointer; transition: var(--transition); box-shadow: 0 5px 15px rgba(40, 167, 69, 0.3);
+        }
+        .modal-card button:hover { transform: translateY(-3px); background: #218838; }
+
+        /* --- MODAL DE AGUARDANDO PAGAMENTO (NOVO) --- */
+        #waitingModal .modal-card { border-color: #009EE3; }
+        #waitingModal .modal-icon-wrapper { background: rgba(0, 158, 227, 0.1); }
+        #waitingModal .modal-icon-wrapper i { color: #009EE3; }
+        #waitingModal .modal-icon-wrapper::after { border-color: #009EE3; animation: pulse 2s infinite; content:''; position: absolute; width:100%; height:100%; border-radius:50%; border:2px solid #009EE3; opacity:0.5; }
+        @media (max-width: 650px) { .container { padding: 30px 20px; } .action-buttons { flex-direction: column; } }
+    </style>
+</head>
+
+<body>
+    <div class="background-image"></div>
+
+    <!-- Modal de Sucesso -->
+    <div id="successModal" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-icon-wrapper"><i class="fas fa-check"></i></div>
+            <h2>Agendamento Confirmado!</h2>
+            <p>Tudo certo! Recebemos seu pagamento.</p>
+            <p id="modalMsg" class="modal-detail" style="font-weight:bold; color:#28a745; margin-bottom:20px;">Pagamento Aprovado</p>
+            <button onclick="finalizarRedirecionamento()">Ver meus Agendamentos</button>
+        </div>
+    </div>
+
+    <!-- Modal "Aguardando Pagamento" (Aparece enquanto a outra aba está aberta) -->
+    <div id="waitingModal" class="modal-overlay">
+        <div class="modal-card">
+            <div class="modal-icon-wrapper"><i class="fas fa-clock"></i></div>
+            <h2>Aguardando Pagamento...</h2>
+            <p>A página de pagamento foi aberta em outra aba.</p>
+            <p>Assim que você pagar lá, esta tela atualizará automaticamente.</p>
+            <div style="margin: 20px 0;">
+                <span class="loader"></span> <span style="color:#666; font-weight:600;">Verificando status...</span>
+            </div>
+            <button onclick="window.open(linkPagamentoAtual, '_blank')" style="background-color: #009EE3; margin-bottom: 10px;">Reabrir Pagamento</button>
+            <button onclick="fecharWaitingModal()" style="background-color: #666;">Cancelar / Pagar Depois</button>
+        </div>
+    </div>
+
+    <div class="container">
+        <h1><i class="fas fa-money-check-alt"></i> Confirmação e Pagamento</h1>
+
+        <div id="appointmentDetails">
+            <p style="text-align: center;">Carregando dados...</p>
+        </div>
+
+        <div class="payment-section">
+            <h2><i class="fas fa-credit-card"></i> Escolha o Método</h2>
+            <input type="hidden" id="paymentMethod" required>
+
+            <div class="payment-options">
+                <div class="payment-option" onclick="selectPayment('pix', this)">
+                    <i class="fas fa-qrcode"></i> PIX / Online
+                </div>
+                <div class="payment-option" onclick="selectPayment('presencial', this)">
+                    <i class="fas fa-handshake"></i> Pagar no Local
+                </div>
+            </div>
+        </div>
+        
+        <div class="action-buttons">
+            <button id="backButton" onclick="window.history.back()">
+                <i class="fas fa-arrow-left"></i> Voltar
+            </button>
+            
+            <div id="paymentActionArea">
+                <!-- Botão Online (Abre nova aba) -->
+                <button id="btnPagarOnline" onclick="iniciarPagamentoOnline()">
+                    <i class="fas fa-external-link-alt"></i> Ir para Pagamento
+                </button>
+
+                <!-- Botão Presencial -->
+                <button id="presencialConfirmButton" onclick="handleConfirmation()">
+                    <i class="fas fa-check"></i> Confirmar Agendamento
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 🛑 CONFIGURAÇÕES
+        // Ajuste a porta se estiver usando Live Server (5500) ou Back (8000)
+        const API_BASE = "http://127.0.0.1:8000"; 
+        
+        let currentAppointment = null;
+        let linkPagamentoAtual = null;
+        let pollingInterval = null;
+
+        const formatTime = (t) => t ? (t.includes('T') ? t.split('T')[1].substring(0,5) : t.substring(0,5)) : '--:--';
+
+        // 1. Buscar Dados
+        async function fetchDetails(id) {
+            const container = document.getElementById('appointmentDetails');
+            try {
+                const res = await fetch(`${API_BASE}/agendamento/agendamentos/${id}`);
+                if (!res.ok) throw new Error("Agendamento não encontrado");
+                
+                currentAppointment = await res.json();
+                const a = currentAppointment;
+                const data = a.data || (a.data_hora_inicio ? a.data_hora_inicio.split('T')[0] : 'N/A');
+                const preco = parseFloat(a.preco || (a.servico ? a.servico.preco : 0));
+                
+                container.innerHTML = `
+                    <div class="detail-item"><span class="detail-label">Cliente:</span><span class="detail-value">${a.cliente?.nome || 'N/A'}</span></div>
+                    <div class="detail-item"><span class="detail-label">Serviço:</span><span class="detail-value">${a.servico?.nome || 'N/A'}</span></div>
+                    <div class="detail-item"><span class="detail-label">Data:</span><span class="detail-value">${data.split('-').reverse().join('/')}</span></div>
+                    <div class="detail-item"><span class="detail-label">Horário:</span><span class="detail-value">${formatTime(a.data_hora_inicio)} - ${formatTime(a.data_hora_fim)}</span></div>
+                    <div class="detail-item" style="border-top: 2px solid var(--accent); margin-top: 15px;">
+                        <span class="detail-label" style="font-size: 1.3em;">VALOR:</span>
+                        <span class="detail-value" id="totalValue">R$ ${preco.toFixed(2).replace('.', ',')}</span>
+                    </div>
+                `;
+            } catch (error) {
+                container.innerHTML = `<p class="error-message">Erro: ${error.message}</p>`;
+            }
+        }
+
+        // 2. Gerar Link de Pagamento (Backend)
+        async function gerarLinkPagamento() {
+            if (!currentAppointment) return alert("Aguarde o carregamento.");
+            
+            // Texto do botão vira "Carregando..."
+            const btn = document.getElementById('btnPagarOnline');
+            const textoOriginal = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Gerando...';
+            btn.disabled = true;
+
+            const idAgendamento = new URLSearchParams(window.location.search).get('id');
+            const preco = parseFloat(currentAppointment.preco || currentAppointment.servico.preco);
+
+            const payload = {
+                agendamento_id: parseInt(idAgendamento),
+                external_reference: String(idAgendamento),
+                item: {
+                    title: `Serviço: ${currentAppointment.servico.nome}`,
+                    quantity: 1,
+                    unit_price: preco
+                },
+                payer_email: currentAppointment.cliente.email || "email@teste.com"
+            };
+
+            try {
+                const res = await fetch(`${API_BASE}/pagamentos/criar_preferencia`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+                
+                if (!res.ok) throw new Error("Erro ao criar preferência");
+
+                const data = await res.json();
+                
+                // Pega o link (init_point = Produção, sandbox_init_point = Teste)
+                // Se estiver usando credenciais de teste, use sandbox. Se produção, init_point.
+                linkPagamentoAtual = data.init_point; 
+                
+                return linkPagamentoAtual;
+
+            } catch (e) {
+                console.error(e);
+                alert("Erro ao gerar pagamento.");
+                return null;
+            } finally {
+                btn.innerHTML = textoOriginal;
+                btn.disabled = false;
+            }
+        }
+
+        // 3. Iniciar Fluxo Online (Nova Aba + Polling)
+        async function iniciarPagamentoOnline() {
+            // Se ainda não tem link, gera um
+            if (!linkPagamentoAtual) {
+                const link = await gerarLinkPagamento();
+                if (!link) return;
+            }
+
+            // Abre o Mercado Pago em NOVA ABA
+            window.open(linkPagamentoAtual, '_blank');
+
+            // Mostra modal "Aguardando..." aqui na aba original
+            const waitingModal = document.getElementById('waitingModal');
+            waitingModal.style.display = 'flex';
+            setTimeout(() => waitingModal.classList.add('active'), 10);
+
+            // Inicia o Polling (Verificação)
+            const idAgendamento = new URLSearchParams(window.location.search).get('id');
+            iniciarMonitoramentoPagamento(idAgendamento);
+        }
+
+        // 4. Polling (Verificação de Status)
+        function iniciarMonitoramentoPagamento(agendamentoId) {
+            if (pollingInterval) clearInterval(pollingInterval);
+            
+            console.log("Monitorando status para ID:", agendamentoId);
+            
+            pollingInterval = setInterval(async () => {
+                try {
+                    const res = await fetch(`${API_BASE}/pagamentos/status/${agendamentoId}`);
+                    if (!res.ok) return;
+
+                    const data = await res.json();
+                    
+                    // STATUS 2 = PAGO
+                    if (data.status === 2 || data.status_descricao === 'approved') {
+                        clearInterval(pollingInterval);
+                        
+                        // Fecha modal de espera
+                        document.getElementById('waitingModal').classList.remove('active');
+                        setTimeout(() => document.getElementById('waitingModal').style.display = 'none', 300);
+
+                        // Abre modal de sucesso
+                        handleConfirmation();
+                    }
+                } catch (e) { console.error(e); }
+            }, 3000); // Verifica a cada 3 segundos
+        }
+
+        // 5. Controles de UI
+        function selectPayment(method, element) {
+            document.querySelectorAll('.payment-option').forEach(opt => opt.classList.remove('selected'));
+            element.classList.add('selected');
+            document.getElementById('paymentMethod').value = method;
+
+            const btnOnline = document.getElementById('btnPagarOnline');
+            const btnPresencial = document.getElementById('presencialConfirmButton');
+
+            if (method === 'presencial') {
+                btnOnline.style.display = 'none';
+                btnPresencial.style.display = 'block';
+                if(pollingInterval) clearInterval(pollingInterval);
+            } else {
+                btnPresencial.style.display = 'none';
+                btnOnline.style.display = 'block';
+            }
+        }
+
+        function handleConfirmation() {
+            const modal = document.getElementById('successModal');
+            modal.style.display = 'flex';
+            setTimeout(() => modal.classList.add('active'), 10);
+        }
+
+        function fecharWaitingModal() {
+            const modal = document.getElementById('waitingModal');
+            modal.classList.remove('active');
+            setTimeout(() => modal.style.display = 'none', 300);
+            if(pollingInterval) clearInterval(pollingInterval);
+        }
+
+        function finalizarRedirecionamento() {
+            window.location.href = "horasmarcadasclientes.html"; 
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const id = new URLSearchParams(window.location.search).get('id');
+            if (id) fetchDetails(id);
+        });
+    </script>
+</body>
+</html>
